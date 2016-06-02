@@ -1,8 +1,0 @@
-D:\Dropbox\Programming\C#\MultiPlayer\Server\bin\Debug\Server.exe.config
-D:\Dropbox\Programming\C#\MultiPlayer\Server\bin\Debug\Server.exe
-D:\Dropbox\Programming\C#\MultiPlayer\Server\bin\Debug\Server.pdb
-D:\Dropbox\Programming\C#\MultiPlayer\Server\obj\Debug\Server.exe
-D:\Dropbox\Programming\C#\MultiPlayer\Server\obj\Debug\Server.pdb
-D:\Dropbox\Programming\C#\MultiPlayer\Server\bin\Debug\Message.dll
-D:\Dropbox\Programming\C#\MultiPlayer\Server\bin\Debug\Message.pdb
-D:\Dropbox\Programming\C#\MultiPlayer\Server\obj\Debug\Server.csprojResolveAssemblyReference.cache
