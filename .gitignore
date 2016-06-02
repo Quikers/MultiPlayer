@@ -2,8 +2,6 @@
 ## Eclipse
 #################
 
-MultiPlayer/obj/
-Server/obj/
 *.pydevproject
 .project
 .metadata
