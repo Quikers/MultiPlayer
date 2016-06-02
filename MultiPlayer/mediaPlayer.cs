@@ -30,13 +30,12 @@ namespace MultiPlayer {
             player.playlist.add("file:///" + filePath, name, options);
         }
 
-        public void togglePause() {
+        public void playPause() {
             if (stopped == true) {
                 player.playlist.play();
                 stopped = false;
-            }
-            
-            player.playlist.togglePause();
+                MessageBox.Show( player.playlist.items.count.ToString() );
+            } else player.playlist.togglePause();
         }
 
         public void stop() {
@@ -117,7 +116,7 @@ namespace MultiPlayer {
             else
                 btn_playpause.Text = "Play";
 
-            togglePause();
+            playPause();
         }
     }
 }

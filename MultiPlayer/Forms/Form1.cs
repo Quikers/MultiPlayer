@@ -29,6 +29,7 @@ namespace MultiPlayer {
         public Form2 form2;
         public Form3 form3;
         public Toast toast;
+        public OpenFileDialog fileDiag;
         
         private Point savedLoc = new Point(0, 0);
         private Size savedSize = new Size(0, 0);
@@ -53,6 +54,11 @@ namespace MultiPlayer {
                 } else if (ex.ToString().IndexOf("bounds") > -1) { }
                 else toast.Show(ex.ToString());
             }
+
+            fileDiag = new OpenFileDialog();
+            fileDiag.Title = "Open media file";
+            fileDiag.FileName = "";
+            fileDiag.Filter = "All Files (*.*)|*.*|.mp4 Files|*.mp4|.mkv Files|*.mkv";
 
             GlobalMouseHandler gmh = new GlobalMouseHandler(); // Instantiate new global MouseEventHandler
             gmh.MouseMoved += new MouseMovedEvent(Mouse_Moved); // Add Mouse_Move event
@@ -97,11 +103,6 @@ namespace MultiPlayer {
         }
 
         private void openMedia() {
-            OpenFileDialog fileDiag = new OpenFileDialog();
-            fileDiag.Title = "Open media file";
-            fileDiag.FileName = "";
-            fileDiag.Filter = "All Files (*.*)|*.*|.mp4 Files|*.mp4|.mkv Files|*.mkv";
-
             if (fileDiag.ShowDialog() == DialogResult.OK) {
                 if (fileDiag.FileNames.Length > 0) {
                     for (int i = 0; i < fileDiag.FileNames.Length; i++) {
@@ -235,7 +236,7 @@ namespace MultiPlayer {
                                 }
                             } else {                                    // If play request was received from server
                                 msg = new mpMessage();
-                                mediaPlayer1.togglePause();
+                                mediaPlayer1.playPause();
                             }
                         } else {                                        // Client did not select media yet
                             msg = new mpMessage(username, mpMessage.Type.message, username + " did not select a media file");
@@ -247,7 +248,7 @@ namespace MultiPlayer {
                     case "pause": // ===================== Request media pause =====================
                         if (msgArr[1] != "") {
                             s = data.message;
-                            mediaPlayer1.togglePause();
+                            mediaPlayer1.playPause();
                         } else {                                        // If pause request is being sent
                             mpMessage msg1 = new mpMessage(username, mpMessage.Type.cmd, "pause;");
                             sendData(msg1);
@@ -410,14 +411,14 @@ namespace MultiPlayer {
 
         private void playToolStripMenuItem1_Click(object sender, EventArgs e) {
             if (mediaPlayer1.player.playlist.items.count > 0) {
-                mediaPlayer1.togglePause();
-
+                mediaPlayer1.playPause();
+                
                 string mediaPath = mediaPlayer1.player.mediaDescription.title;
                 string mediaName = (mediaPath != "" ? mediaPath.Substring(mediaPath.LastIndexOf("\\") + 1) : "");
 
                 if (clientSocket != null && clientSocket.Connected) {
                     sendData(new mpMessage(username, mpMessage.Type.cmd, "play;" + mediaName + ";"));
-                } else mediaPlayer1.togglePause();
+                } else mediaPlayer1.playPause();
             } else {
                 toast.Show("You did not select a media file");
             }
@@ -456,8 +457,9 @@ namespace MultiPlayer {
             if (clientSocket != null && clientSocket.Connected == true) {
                 if (mediaPlayer1.player.playlist.isPlaying == false) openMedia();
                 else toast.Show("You cannot open media while connected to a server and playing media.");
-            } else {
-                mediaPlayer1.togglePause();
+            } else
+            {
+                if( mediaPlayer1.player.playlist.items.count > 0 ) mediaPlayer1.playPause();
                 openMedia();
             }
         }

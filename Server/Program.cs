@@ -97,19 +97,28 @@ namespace ConsoleApplication1 {
 
         public static void sendData (TcpClient clientSocket, mpMessage data) {
             try {
-                NetworkStream broadcastStream = clientSocket.GetStream();
-                byte[] broadcastBytes = data.ToBytes();
+                NetworkStream writeStream = clientSocket.GetStream();
+                byte[] message = data.ToBytes();
 
-                broadcastStream.Write(broadcastBytes, 0, broadcastBytes.Length);
-                broadcastStream.Flush();
+                writeStream.Write(message, 0, message.Length);
+                writeStream.Flush();
             } catch (Exception ex) {
-                while (clientSocket.Connected == true) clientSocket.Close();
-                clientSocket = null;
-                clientPlayOKList.Remove(data.from);
+                DisconnectClient(clientSocket, data.from);
             }
 
-            Console.WriteLine("Broadcast: " + data.ToString());
+            Console.WriteLine("To " + data.from + ": " + data.ToString());
         }  //end broadcast function
+
+        public static void DisconnectClient( TcpClient clientSocket, string username )
+        {
+            while( clientSocket.Connected == true )
+                clientSocket.Close();
+            clientSocket = null;
+            clientsList.Remove( username );
+            clientPlayOKList.Remove( username );
+
+            broadcast( new mpMessage( username, mpMessage.Type.message, username + " left" ) );
+        }
 
         public static void broadcast (mpMessage data) {
             List<DictionaryEntry> remove = new List<DictionaryEntry>();
@@ -149,7 +158,7 @@ namespace ConsoleApplication1 {
             }
         }
 
-        public static List<mpMessage> handleCommands(mpMessage data, handleClient hClient) {
+        public static List<mpMessage> handleCommands(TcpClient clientSocket, mpMessage data) {
             List<mpMessage> result = new List<mpMessage>();
             string[] msgArr = data.message.Split(';');
 
@@ -159,13 +168,10 @@ namespace ConsoleApplication1 {
                         default:
                             result.Add(new mpMessage(data.from, mpMessage.Type.error, data.from + " sent unrecognized command: " + data.message + ";"));
                             break;
-                        case "join":
-                            result.Add(new mpMessage(data.from, mpMessage.Type.message, data.from + " joined"));
-                            break;
                         case "disconnect":
                             result.Add(new mpMessage(data.from, mpMessage.Type.message, data.from + " left"));
 
-                            hClient.closeClientSocket();
+                            DisconnectClient(clientSocket, data.from);
                             break;
                         case "play":
                             playRequestPending = true;
@@ -266,7 +272,7 @@ namespace ConsoleApplication1 {
                     networkStream.Read(bytesFrom, 0, 1024);
 
                     dataFromClient = new mpMessage(bytesFrom);
-                    List<mpMessage> result = Program.handleCommands(dataFromClient, this);
+                    List<mpMessage> result = Program.handleCommands(clientSocket, dataFromClient);
                     for (int i = 0; i < result.Count; i++) Program.broadcast(result[i]);
                 } catch (Exception ex) {
                     if (ex.Message.IndexOf("forcibly") > -1)
