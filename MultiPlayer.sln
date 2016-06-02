@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Express 14 for Windows Desktop
+VisualStudioVersion = 14.0.25123.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MultiPlayer", "MultiPlayer\MultiPlayer.csproj", "{C576C15B-CEB5-478A-BEE2-FD9F5754E9AB}"
+	ProjectSection(ProjectDependencies) = postProject
+		{6A766F6F-2A8B-4D66-8088-F4F6357F6689} = {6A766F6F-2A8B-4D66-8088-F4F6357F6689}
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Server", "Server\Server.csproj", "{6A766F6F-2A8B-4D66-8088-F4F6357F6689}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{C576C15B-CEB5-478A-BEE2-FD9F5754E9AB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C576C15B-CEB5-478A-BEE2-FD9F5754E9AB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C576C15B-CEB5-478A-BEE2-FD9F5754E9AB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C576C15B-CEB5-478A-BEE2-FD9F5754E9AB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6A766F6F-2A8B-4D66-8088-F4F6357F6689}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6A766F6F-2A8B-4D66-8088-F4F6357F6689}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6A766F6F-2A8B-4D66-8088-F4F6357F6689}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6A766F6F-2A8B-4D66-8088-F4F6357F6689}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
