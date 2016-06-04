@@ -14,7 +14,6 @@ using System.Net.Sockets;
 using System.IO;
 
 using MultiPlayerLib;
-using Gma.UserActivityMonitor;
 
 namespace MultiPlayer {
     public partial class Form1 : Form {
@@ -34,9 +33,6 @@ namespace MultiPlayer {
         private Point savedLoc = new Point(0, 0);
         private Size savedSize = new Size(0, 0);
         private FormBorderStyle savedBorder = new FormBorderStyle();
-        
-        private bool isCtrlDown = false;
-        private bool isSpaceDown = false;
         private bool LMBclicked = false;
 
         public string username = "";

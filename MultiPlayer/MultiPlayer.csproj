@@ -49,12 +49,8 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Gma.UserActivityMonitor, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\__CUSTOM LIBS\Gma.UserActivityMonitor.dll</HintPath>
-    </Reference>
     <Reference Include="Message">
-      <HintPath>..\..\__CUSTOM LIBS\MultiPlayerLib\MultiPlayerLib\bin\Debug\Message.dll</HintPath>
+      <HintPath>..\Libs\Message.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
