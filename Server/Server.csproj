@@ -34,7 +34,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Message">
-      <HintPath>..\..\__CUSTOM LIBS\MultiPlayerLib\MultiPlayerLib\bin\Debug\Message.dll</HintPath>
+      <HintPath>..\Libs\Message.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
