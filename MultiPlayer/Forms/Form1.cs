@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Configuration;
 using System.Data;
 using System.Drawing;
 using System.Linq;
@@ -14,11 +16,18 @@ using System.Net.Sockets;
 using System.IO;
 
 using MultiPlayerLib;
-using Gma.UserActivityMonitor;
 
 namespace MultiPlayer {
     public partial class Form1 : Form {
+        /// <summary>
+        /// MultiPlayer form window state.
+        /// </summary>
+        enum mpWindowState {
+            Windowed,
+            FullscreenWindowed
+        }
 
+        Option settings = new Option("Settings.ini");
         Thread ctThread;
 
         TcpClient clientSocket;
@@ -30,14 +39,12 @@ namespace MultiPlayer {
         public Form3 form3;
         public Toast toast;
         public OpenFileDialog fileDiag;
-        
+        GlobalMouseHandler gmh;
+        mpWindowState windowState = new mpWindowState();
+
         private Point savedLoc = new Point(0, 0);
         private Size savedSize = new Size(0, 0);
         private FormBorderStyle savedBorder = new FormBorderStyle();
-        
-        private bool isCtrlDown = false;
-        private bool isSpaceDown = false;
-        private bool LMBclicked = false;
 
         public string username = "";
 
@@ -46,59 +53,107 @@ namespace MultiPlayer {
 
             toast = new Toast(this, mediaPlayer1.Location);
 
-            try { // Read username from settings file
-                username = File.ReadAllLines("Settings.ini")[0];
-            } catch (Exception ex) {
-                if (ex.ToString().IndexOf("Could not find") > -1) {
-                    File.Create("Settings.ini");
-                } else if (ex.ToString().IndexOf("bounds") > -1) { }
-                else toast.Show(ex.ToString());
-            }
-
             fileDiag = new OpenFileDialog();
             fileDiag.Title = "Open media file";
             fileDiag.FileName = "";
             fileDiag.Filter = "All Files (*.*)|*.*|.mp4 Files|*.mp4|.mkv Files|*.mkv";
 
-            GlobalMouseHandler gmh = new GlobalMouseHandler(); // Instantiate new global MouseEventHandler
+            gmh = new GlobalMouseHandler(); // Instantiate new global MouseEventHandler
             gmh.MouseMoved += new MouseMovedEvent(Mouse_Moved); // Add Mouse_Move event
             gmh.LMBDoubleClick += new MouseMovedEvent(LMB_DoubleClick); // Add Mouse_Move event
             Application.AddMessageFilter(gmh);
         }
 
+        /// <summary>
+        /// Saves the given option to the Settings.ini file.
+        /// </summary>
+        /// <param name="name">The name of the option</param>
+        /// <param name="value">The value of the option</param>
+        private void saveOptions(Option options) {
+
+        }
+
+        /// <summary>
+        /// Saves the given option to the Settings.ini file.
+        /// </summary>
+        /// <param name="name">The name of the option</param>
+        /// <param name="value">The value of the option</param>
+        private void loadOptions(string name, string value) {
+
+        }
+
+        /// <summary>
+        /// EventHandler for mouse movement inside the form.
+        /// </summary>
         private void Mouse_Moved() {
+            Size mpSize = mediaPlayer1.Size;
+            Point mPos = Cursor.Position;
+            int mpY = 52;
 
-        }
+            if (mPos.X > this.Location.X &&
+                mPos.X < this.Location.X + mpSize.Width + 10 &&
+                mPos.Y > this.Location.Y + mpSize.Height - 32 &&
+                mPos.Y < this.Location.Y + mpY + mpSize.Height) {
 
-        private void LMB_DoubleClick() {
-        }
+                mediaPlayer1.showToolbar();
 
-        private void t_tick(object sender, EventArgs e, System.Windows.Forms.Timer t) {
-            LMBclicked = false;
+            } else mediaPlayer1.hideToolbar();
 
-            t.Stop();
-            t.Dispose();
-        }
-
-        private void toggleFullscreen() {
             if (mediaPlayer1.fullscreen == true) {
+                if (menuStrip1.Visible == false) {
+                    if (mPos.Y < menuStrip1.Size.Height) {
+                        menuStrip1.Visible = true;
+                        menuStrip1.Focus();
+                    }
+                } else if (mPos.Y > menuStrip1.Size.Height && menuStrip1.Focused == true)
+                    mediaPlayer1.Focus();
+            }
+        }
+
+        /// <summary>
+        /// EventHandler for double left-mousebutton clicks.
+        /// </summary>
+        private void LMB_DoubleClick() {
+            Point mPos = Cursor.Position;
+            Size mpSize = mediaPlayer1.Size;
+            int mpY = 52;
+
+            if (mPos.X > this.Location.X &&
+                mPos.X < this.Location.X + mpSize.Width &&
+                mPos.Y > this.Location.Y + mpY &&
+                mPos.Y < this.Location.Y + mpY + mpSize.Height) {
+
+                if (windowState == mpWindowState.Windowed)
+                    toggleFullscreen(mpWindowState.FullscreenWindowed);
+                if (windowState == mpWindowState.FullscreenWindowed)
+                    toggleFullscreen(mpWindowState.Windowed);
+            }
+                    
+        }
+
+        /// <summary>
+        /// Toggles the fullscreen on or off depending on the defined fullscreen state.
+        /// </summary>
+        /// <param name="newState">Sets to specific WindowState</param>
+        private void toggleFullscreen(mpWindowState newState) {
+            if (newState == mpWindowState.FullscreenWindowed) {
+                savedLoc = this.Location;
+                savedSize = this.Size;
+                savedBorder = this.FormBorderStyle;
+
+                this.FormBorderStyle = FormBorderStyle.None;
+                this.Location = new Point(0, -10);
+                this.Size = Screen.GetBounds(this.Location).Size;
+
+                menuStrip1.Visible = false;
+                mediaPlayer1.fullscreen = true;
+            } else {
                 this.FormBorderStyle = savedBorder;
                 this.Location = savedLoc;
                 this.Size = savedSize;
 
                 menuStrip1.Visible = true;
                 mediaPlayer1.fullscreen = false;
-            } else {
-                savedLoc = this.Location;
-                savedSize = this.Size;
-                savedBorder = this.FormBorderStyle;
-
-                this.FormBorderStyle = FormBorderStyle.None;
-                this.Location = new Point(0, 0);
-                this.Size = Screen.GetBounds(this.Location).Size;
-
-                menuStrip1.Visible = false;
-                mediaPlayer1.fullscreen = true;
             }
         }
 
@@ -180,11 +235,8 @@ namespace MultiPlayer {
                     }
                 } catch (Exception ex) {
                     if (clientSocket != null && clientSocket.Connected == true) {
-                        mpMessage disconnect = new mpMessage(username, mpMessage.Type.cmd, "disconnect;");
-                        sendData(disconnect);
-
                         closeClientSocket();
-                        
+
                         if (ex.ToString().IndexOf("forcibly") > -1) readData = "Disconnected from server: Server closed";
                         else if (ex.ToString().IndexOf("WSACancelBlockingCall") > -1) readData = "Disconnected from server: Disconnect";
                         else readData = "Disconnected from server: " + ex.ToString();
@@ -272,7 +324,7 @@ namespace MultiPlayer {
                     this.Invoke(new MethodInvoker(msg));
                 else
                     toast.Show(readData);
-            } catch(Exception ex) { }
+            } catch(Exception ex) { MessageBox.Show("Toast invoke failed: " + ex.ToString()); }
         }
 
         private void btn_playpause_Click(object sender, EventArgs e) {
@@ -323,7 +375,7 @@ namespace MultiPlayer {
                 sendData(disconnect);
 
                 closeClientSocket();
-                toast.Show("Disconnected from server: " + username + "(You) left");
+                toast.Show("Disconnected from server: You left");
                 joinLobbyToolStripMenuItem.Text = "Join lobby";
             }
         }
@@ -345,68 +397,16 @@ namespace MultiPlayer {
         }
 
         private void Form1_FormClosing (object sender, FormClosingEventArgs e) {
-            sendData(new mpMessage(username, mpMessage.Type.cmd, "disconnect;"));
-            if (clientSocket != null) closeClientSocket();
+            if (clientSocket != null && clientSocket.Connected) {
+                sendData(new mpMessage(username, mpMessage.Type.cmd, "disconnect;"));
+                closeClientSocket();
+            }
         }
 
         private void mediaPlayer1_player_MediaPlayerMediaChanged(object sender, EventArgs e) {
             string title = mediaPlayer1.player.mediaDescription.title;
 
             toast.Show("Now playing: " + title.Substring(title.LastIndexOf("\\") + 1));
-        }
-
-        private void mediaPlayer1_MouseMove(object sender, MouseEventArgs e) {
-            MessageBox.Show("Penis");
-
-            Size mpSize = mediaPlayer1.Size;
-            int mpY = 52;
-
-            Cursor.Show();
-
-            if (e.X > this.Location.X &&
-                e.X < this.Location.X + mpSize.Width &&
-                e.Y > this.Location.Y + mpY &&
-                e.Y < this.Location.Y + mpY + mpSize.Height)
-                mediaPlayer1.showToolbar(e.Y, this.Location.Y + mpY + mpSize.Height);
-
-            if (mediaPlayer1.fullscreen == true) {
-                if (menuStrip1.Visible == false) {
-                    if (e.Y < menuStrip1.Size.Height) {
-                        menuStrip1.Visible = true;
-                        menuStrip1.Focus();
-                    }
-                } else if (e.Y > menuStrip1.Size.Height && menuStrip1.Focused == true)
-                    mediaPlayer1.Focus();
-            }
-        }
-
-        private void mediaPlayer1_DLMB(object sender, MouseEventArgs e) {
-            MessageBox.Show("Penis");
-
-            Size mpSize = mediaPlayer1.Size;
-            int mpY = 52;
-
-            if (LMBclicked) {
-                LMBclicked = false;
-
-                if (e.X > this.Location.X &&
-                    e.X < this.Location.X + mpSize.Width &&
-                    e.Y > this.Location.Y + mpY &&
-                    e.Y < this.Location.Y + mpY + mpSize.Height)
-                    toggleFullscreen();
-            } else {
-                if (e.X > this.Location.X &&
-                    e.X < this.Location.X + mpSize.Width &&
-                    e.Y > this.Location.Y + mpY &&
-                    e.Y < this.Location.Y + mpY + mpSize.Height) {
-                    LMBclicked = true;
-
-                    System.Windows.Forms.Timer t = new System.Windows.Forms.Timer();
-                    t.Interval = 500;
-                    t.Tick += (object s, EventArgs a) => t_tick(s, a, t);
-                    t.Start();
-                }
-            }
         }
 
         private void playToolStripMenuItem1_Click(object sender, EventArgs e) {
@@ -422,6 +422,11 @@ namespace MultiPlayer {
             } else {
                 toast.Show("You did not select a media file");
             }
+
+            gmh = new GlobalMouseHandler(); // Instantiate new global MouseEventHandler
+            gmh.MouseMoved += new MouseMovedEvent(Mouse_Moved); // Add Mouse_Move event
+            gmh.LMBDoubleClick += new MouseMovedEvent(LMB_DoubleClick); // Add Mouse_Move event
+            Application.AddMessageFilter(gmh);
         }
 
         private void stopToolStripMenuItem_Click(object sender, EventArgs e) {

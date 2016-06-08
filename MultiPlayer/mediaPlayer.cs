@@ -11,6 +11,7 @@ using System.Threading;
 
 namespace MultiPlayer {
     public partial class mediaPlayer : UserControl {
+        Thread th;
 
         private int savedVolume = -1;
         private bool stopped = true;
@@ -20,10 +21,8 @@ namespace MultiPlayer {
 
         public mediaPlayer() {
             InitializeComponent();
-            
-            t.Interval = 3000;
-            t.Tick += (object s, EventArgs a) => t_tick(s, a, t);
-            t.Start();
+
+            th = new Thread(keepBack);
         }
 
         public void addMedia(string filePath, object name, object options) {
@@ -34,7 +33,6 @@ namespace MultiPlayer {
             if (stopped == true) {
                 player.playlist.play();
                 stopped = false;
-                MessageBox.Show( player.playlist.items.count.ToString() );
             } else player.playlist.togglePause();
         }
 
@@ -78,20 +76,17 @@ namespace MultiPlayer {
             player.AutoLoop = !player.AutoLoop;
         }
 
-        public void showToolbar(int y1, int y2) {
+        public void showToolbar() {
+            MessageBox.Show("");
             pnl_toolbar.Show();
-
-            if (y1 < y2 - 50) {
-                t.Stop();
-                t.Start();
-            }
         }
 
-        private void t_tick(object sender, EventArgs e, System.Windows.Forms.Timer t) {
+        public void hideToolbar() {
             pnl_toolbar.Hide();
-            //Cursor.Hide();
+        }
 
-            t.Stop();
+        private void keepBack() {
+            while(true) player.SendToBack();
         }
 
         private void player_MediaPlayerStopped(object sender, EventArgs e) {

@@ -104,6 +104,7 @@ namespace ConsoleApplication1 {
                 writeStream.Flush();
             } catch (Exception ex) {
                 DisconnectClient(clientSocket, data.from);
+                Console.WriteLine(ex.ToString());
             }
 
             Console.WriteLine("To " + data.from + ": " + data.ToString());
@@ -134,6 +135,8 @@ namespace ConsoleApplication1 {
                     while (broadcastSocket.Connected == true) broadcastSocket.Close();
                     broadcastSocket = null;
                     remove.Add(Item);
+
+                    Console.WriteLine(ex.ToString());
                 }
             }
 

@@ -19,7 +19,7 @@ namespace MultiPlayer {
             try {
                 base.Dispose(disposing);
             } catch(Exception ex) {
-
+                MessageBox.Show("Disposing failed: " + ex.ToString());
             }
         }
 
@@ -239,8 +239,6 @@ namespace MultiPlayer {
             this.mediaPlayer1.Name = "mediaPlayer1";
             this.mediaPlayer1.Size = new System.Drawing.Size(784, 487);
             this.mediaPlayer1.TabIndex = 2;
-            this.mediaPlayer1.MouseMove += new MouseEventHandler(this.mediaPlayer1_MouseMove);
-            this.mediaPlayer1.MouseDoubleClick += new MouseEventHandler(this.mediaPlayer1_DLMB);
             // 
             // Form1
             // 
