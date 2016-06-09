@@ -33,10 +33,14 @@ namespace MultiPlayer {
         }
 
         private void button1_Click (object sender, EventArgs e) {
+            string[] ipPort = textBox1.Text.Split(':');
             IPAddress ip;
-            if (IPAddress.TryParse(textBox1.Text, out ip)) {
+
+            if (IPAddress.TryParse(ipPort[0], out ip)) {
                 try {
-                    form1.connect(ip);
+                    int port = Convert.ToInt16(ipPort[1]);
+
+                    form1.connect(ip, port);
                     this.Close();
                 } catch(Exception ex) {
                     form1.toast.Show(ex.Message);

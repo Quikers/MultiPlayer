@@ -38,9 +38,9 @@ namespace MultiPlayer {
             options = settings;
         }
 
-        public override string ToString() {
+        public string ToString(Hashtable settings) {
             string s = "";
-            foreach (KeyValuePair<string, string> option in options) {
+            foreach (KeyValuePair<string, string> option in settings) {
                 s += option.Key + "=" + option.Value + "\n";
             }
 

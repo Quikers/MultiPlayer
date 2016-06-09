@@ -27,13 +27,12 @@ namespace MultiPlayer {
             FullscreenWindowed
         }
 
-        Option settings = new Option("Settings.ini");
+        //Option settings = new Option("Settings.ini");
         Thread ctThread;
 
         TcpClient clientSocket;
         NetworkStream serverStream = default(NetworkStream);
         string readData = null;
-        const int port = 733;
 
         public Form2 form2;
         public Form3 form3;
@@ -50,6 +49,8 @@ namespace MultiPlayer {
 
         public Form1() {
             InitializeComponent();
+
+            checkForUpdatesToolStripMenuItem.Visible = false;
 
             toast = new Toast(this, mediaPlayer1.Location);
 
@@ -192,7 +193,7 @@ namespace MultiPlayer {
             }
         }
 
-        public void connect(IPAddress ip) {
+        public void connect(IPAddress ip, int port) {
             clientSocket = new TcpClient();
 
             clientSocket.Connect(ip, port);
@@ -446,7 +447,10 @@ namespace MultiPlayer {
         }
 
         private void fullscreenToolStripMenuItem_Click(object sender, EventArgs e) {
-            toggleFullscreen();
+            if (windowState == mpWindowState.Windowed)
+                toggleFullscreen(mpWindowState.FullscreenWindowed);
+            else
+                toggleFullscreen(mpWindowState.Windowed);
         }
 
         private void muteToolStripMenuItem_Click(object sender, EventArgs e) {

@@ -10,10 +10,10 @@ using MultiPlayerLib;
 
 namespace ConsoleApplication1 {
     class Program {
+        public static Thread serverHandlerThread;
+
         public static Hashtable clientsList = new Hashtable();
         public const int maxBuffer = 1024;
-        public const int port = 733;
-        public static bool exit = false;
         public static bool runServer = false;
 
         public static Dictionary<string, bool> clientPlayOKList = new Dictionary<string, bool>();
@@ -24,73 +24,116 @@ namespace ConsoleApplication1 {
         static void Main (string[] args) {
             Console.ForegroundColor = ConsoleColor.Green;
 
+            bool exit = false;
             while (exit == false) {
+                Console.Write("Do you want to set up a manual server?\n\"y\" = Manual server options\n\"n\" = Default server options\n\n(y/n): ");
+                string line = Console.ReadLine();
+                char answer;
+
+                if (line.Length > 0) {
+                    answer = line[0];
+                } else {
+                    Console.Clear();
+                    Console.WriteLine("You didn't enter an answer, please enter either \"y\" or \"n\".\n");
+                    continue;
+                }
+
+                string ipRL = "";
+                if (answer == 'y') {
+                    Console.Write("\nEnter ip address + port (ex. {127.0.0.1:733} press ENTER to bind to all ip's): ");
+                    ipRL = Console.ReadLine();
+                } else if (answer == 'n') {
+                    ipRL = "0.0.0.0:733";
+                } else {
+                    Console.Clear();
+                    Console.WriteLine("\"" + line + "\" is not a valid answer, please enter \"y\" or \"n\".\n");
+                    continue;
+                }
+
                 IPAddress ip;
-                Console.Write("Enter ip address (press ENTER to bind to all ip's): ");
-                string ipRL = Console.ReadLine();
+                if (ipRL == "")
+                    ipRL = "0.0.0.0:733";
 
-                if (ipRL == "") ipRL = "0.0.0.0";
-                if (IPAddress.TryParse(ipRL, out ip)) {
+                string[] ipPort = ipRL.Split(':');
+                if (IPAddress.TryParse(ipPort[0], out ip)) {
 
-                    TcpListener serverSocket = new TcpListener(ip, port);
+                    TcpListener serverSocket = new TcpListener(ip, Convert.ToInt16(ipPort[1]));
                     TcpClient clientSocket = default(TcpClient);
-                    int counter = 0;
 
-                    try {
-                        serverSocket.Start();
-                        runServer = true;
+                    serverHandlerThread = new Thread(() => serverHandler(serverSocket, clientSocket, ip, Convert.ToInt16(ipPort[1])));
+                    serverHandlerThread.Start();
 
-                        counter = 0;
-                        Console.WriteLine("\n=========== MultiPlayer Server ===========\nServer started on " + serverSocket.LocalEndpoint);
+                    while (true) { // ======================= Commands go here =======================
+                        string[] ans = { Console.ReadLine() };
+                        ans = ans[0].Split(' ');
 
-                        while (runServer == true) {
-                            counter += 1;
-                            clientSocket = serverSocket.AcceptTcpClient();
-
-                            byte[] bytesFrom = new byte[maxBuffer];
-                            mpMessage dataFromClient = null;
-
-                            NetworkStream networkStream = clientSocket.GetStream();
-                            networkStream.Read(bytesFrom, 0, 1024);
-                            dataFromClient = new mpMessage(Encoding.ASCII.GetString(bytesFrom));
-
-                            if (clientsList.ContainsKey(dataFromClient.from)) {
-                                mpMessage usernameInUse = new mpMessage(dataFromClient.from, mpMessage.Type.cmd, "inUse;");
-                                sendData(clientSocket, usernameInUse);
-                            } else {
-                                clientsList.Add(dataFromClient.from, clientSocket);
-                                clientPlayOKList.Add(dataFromClient.from, false);
-
-                                if (dataFromClient.type == mpMessage.Type.cmd && dataFromClient.message.IndexOf("join") > -1) {
-                                    dataFromClient.type = mpMessage.Type.message;
-                                    dataFromClient.message = dataFromClient.from + " joined.";
-
-                                    handleClient client = new handleClient();
-                                    client.startClient(clientSocket, dataFromClient.from, clientsList);
-
-                                    broadcast(dataFromClient);
-                                }
-                            }
+                        switch (ans[0]) {
+                            default:
+                                Console.WriteLine("\"" + ans + "\" was not recognized as a MultiPlayerServer command.");
+                                break;
+                            case "say":
+                                broadcast(new mpMessage("Server", mpMessage.Type.message, ans[1]));
+                                break;
                         }
 
-                        while (clientSocket.Connected == true) clientSocket.Close();
-                        clientSocket = null;
-                        serverSocket.Stop();
-                        Console.WriteLine("Server stopped");
-                        Console.ReadLine();
-                        exit = true;
-                    } catch (Exception ex) {
-                        if (ex.Message.IndexOf("Only one usage") > -1) {
-                            Console.WriteLine("\nPort " + port + " is already in use on " + (ip.ToString() == "0.0.0.0" ? ip.ToString() + " (Any ip)" : ip.ToString()) + "\n");
-                        } else {
-                            Console.WriteLine(ex.Message);
-                            clientSocket = null;
-                            exit = true;
-                        }
+                        Console.WriteLine("You wrote: " + ans + "\n");
                     }
+
                 } else {
                     Console.Clear();
                     Console.WriteLine("Invalid ip address.");
+                }
+            }
+        }
+
+        private static void serverHandler(TcpListener serverSocket, TcpClient clientSocket, IPAddress ip, int port) {
+            try {
+                serverSocket.Start();
+                runServer = true;
+                
+                Console.WriteLine("\n=========== MultiPlayer Server ===========\nServer started on " + serverSocket.LocalEndpoint);
+
+                while (runServer == true) {
+                    clientSocket = serverSocket.AcceptTcpClient();
+
+                    byte[] bytesFrom = new byte[maxBuffer];
+                    mpMessage dataFromClient = null;
+
+                    NetworkStream networkStream = clientSocket.GetStream();
+                    networkStream.Read(bytesFrom, 0, 1024);
+                    dataFromClient = new mpMessage(Encoding.ASCII.GetString(bytesFrom));
+
+                    if (clientsList.ContainsKey(dataFromClient.from)) {
+                        mpMessage usernameInUse = new mpMessage(dataFromClient.from, mpMessage.Type.cmd, "inUse;");
+                        sendData(clientSocket, usernameInUse);
+                    } else {
+                        clientsList.Add(dataFromClient.from, clientSocket);
+                        clientPlayOKList.Add(dataFromClient.from, false);
+
+                        if (dataFromClient.type == mpMessage.Type.cmd && dataFromClient.message.IndexOf("join") > -1) {
+                            dataFromClient.type = mpMessage.Type.message;
+                            dataFromClient.message = dataFromClient.from + " joined.";
+
+                            handleClient client = new handleClient();
+                            client.startClient(clientSocket, dataFromClient.from, clientsList);
+
+                            broadcast(dataFromClient);
+                        }
+                    }
+                }
+
+                while (clientSocket.Connected == true)
+                    clientSocket.Close();
+                clientSocket = null;
+                serverSocket.Stop();
+                Console.WriteLine("Server stopped");
+                Console.ReadLine();
+            } catch (Exception ex) {
+                if (ex.Message.IndexOf("Only one usage") > -1) {
+                    Console.WriteLine("\nPort " + port + " is already in use on " + (ip.ToString() == "0.0.0.0" ? ip.ToString() + " (Any ip)" : ip.ToString()) + "\n");
+                } else {
+                    Console.WriteLine(ex.Message);
+                    clientSocket = null;
                 }
             }
         }
