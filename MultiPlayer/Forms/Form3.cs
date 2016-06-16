@@ -33,8 +33,12 @@ namespace MultiPlayer {
         }
 
         private void button1_Click (object sender, EventArgs e) {
+            form1.toast.Show("Connecting...");
+
             string[] ipPort = textBox1.Text.Split(':');
             IPAddress ip;
+
+            string s = null;
 
             if (IPAddress.TryParse(ipPort[0], out ip)) {
                 try {
@@ -43,8 +47,8 @@ namespace MultiPlayer {
                     form1.connect(ip, port);
                     this.Close();
                 } catch(Exception ex) {
-                    form1.toast.Show(ex.Message);
-                    form1.toast.Show("Could not connect to " + ip.ToString());
+                    if (ex.ToString().IndexOf("actively refused") > -1) form1.toast.Show("Could not connect to " + ip.ToString());
+                    else form1.toast.Show(ex.Message);
                 }
             } else form1.toast.Show("The IP address you entered is not a valid IP address.");
         }
