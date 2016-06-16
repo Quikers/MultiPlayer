@@ -105,7 +105,6 @@ namespace MultiPlayer {
             this.connectToolStripMenuItem.Name = "connectToolStripMenuItem";
             this.connectToolStripMenuItem.Size = new System.Drawing.Size(64, 20);
             this.connectToolStripMenuItem.Text = "Connect";
-            this.connectToolStripMenuItem.Click += new System.EventHandler(this.connectToolStripMenuItem_Click);
             // 
             // startServerToolStripMenuItem
             // 
@@ -270,7 +269,7 @@ namespace MultiPlayer {
         private System.Windows.Forms.ToolStripMenuItem exitToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem connectToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem startServerToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem joinLobbyToolStripMenuItem;
+        public  System.Windows.Forms.ToolStripMenuItem joinLobbyToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem playToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem helpToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem aboutToolStripMenuItem;

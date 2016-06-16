@@ -8,17 +8,20 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.IO;
+using System.Xml.Linq;
 
 namespace MultiPlayer {
     public partial class Form2 : Form {
         public Form1 form1;
+        private bool isUsernameSet = true;
 
-        public Form2(Form1 _form1) {
+        public Form2(Form1 _form1, bool isUsernameSet = true) {
             InitializeComponent();
             this.Visible = true;
 
             form1 = _form1;
-            label2.Text = "Current username: " + form1.username;
+            this.isUsernameSet = isUsernameSet;
+            label2.Text = "Current username: " + form1.options["username"];
         }
 
         private void form2_closing(object sender, FormClosingEventArgs e) {
@@ -28,14 +31,18 @@ namespace MultiPlayer {
         private void button1_Click(object sender, EventArgs e) {
             if (textBox1.Text.Length > 2) {
                 try {
-                    string[] s = { textBox1.Text };
-                    File.WriteAllLines("Settings.ini", s);
+                    form1.options["username"] = textBox1.Text;
+
+                    form1.saveOptions("Settings.ini");
                 } catch (Exception ex) {
                     Console.WriteLine("Exception: " + ex.Message);
                 }
 
-                form1.username = textBox1.Text;
-                label2.Text = "Current username: " + form1.username;
+                form1.options["username"] = textBox1.Text;
+                label2.Text = "Current username: " + form1.options["username"];
+
+                if (!isUsernameSet) form1.joinLobbyToolStripMenuItem.PerformClick();
+                this.Close();
             } else MessageBox.Show("Your username has to at least be 3 characters long.", "Invalid username");
         }
 

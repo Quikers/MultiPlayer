@@ -36,6 +36,8 @@ namespace MultiPlayer {
 
         public Form2 form2;
         public Form3 form3;
+
+        public Dictionary<string, string> options;
         public Toast toast;
         public OpenFileDialog fileDiag;
         GlobalMouseHandler gmh;
@@ -45,14 +47,13 @@ namespace MultiPlayer {
         private Size savedSize = new Size(0, 0);
         private FormBorderStyle savedBorder = new FormBorderStyle();
 
-        public string username = "";
-
         public Form1() {
             InitializeComponent();
 
             checkForUpdatesToolStripMenuItem.Visible = false;
 
             toast = new Toast(this, MediaController.Location);
+            options = loadOptions("Settings.ini");
 
             fileDiag = new OpenFileDialog();
             fileDiag.Title = "Open media file";
@@ -69,19 +70,33 @@ namespace MultiPlayer {
         /// <summary>
         /// Saves the given option to the Settings.ini file.
         /// </summary>
-        /// <param name="name">The name of the option</param>
-        /// <param name="value">The value of the option</param>
-        private void saveOptions(Option options) {
+        public void saveOptions(string filePath) {
+            string s = "";
 
+            foreach (KeyValuePair<string, string> option in options) {
+                s += option.Key + "=" + option.Value + "\n";
+            }
+
+            File.WriteAllText(filePath, s);
+            toast.Show("Options saved");
         }
 
         /// <summary>
-        /// Saves the given option to the Settings.ini file.
+        /// Loads the given file and returns the values in a hashtable.
         /// </summary>
-        /// <param name="name">The name of the option</param>
-        /// <param name="value">The value of the option</param>
-        private void loadOptions(string name, string value) {
+        /// <param name="filePath">The name of the option</param>
+        /// <returns>A hashtable filled with options.</returns>
+        public Dictionary<string, string> loadOptions(string filePath) {
+            Dictionary<string, string> settings = new Dictionary<string, string>();
+            string[] lines = File.ReadLines(filePath).ToArray();
 
+            foreach (string s in lines) {
+                string[] option = s.Split('=');
+                settings.Add(option[0], option[1]);
+            }
+
+            toast.Show("Options loaded.");
+            return settings;
         }
 
         /// <summary>
@@ -203,8 +218,8 @@ namespace MultiPlayer {
                 changeUsernameToolStripMenuItem.Enabled = false;
 
                 serverStream = clientSocket.GetStream();
-
-                mpMessage joined = new mpMessage(username, mpMessage.Type.cmd, "join;");
+                
+                mpMessage joined = new mpMessage(options["username"], mpMessage.Type.cmd, "join;");
                 sendData(joined);
 
                 ctThread = new Thread(handleClient);
@@ -264,7 +279,7 @@ namespace MultiPlayer {
                         break;
 
                     case "inUse": // ===================== Username already taken =====================
-                        s = "Server rejected connection: Username \"" + username + "\" already in use";
+                        s = "Server rejected connection: Username \"" + options["username"] + "\" already in use";
                         closeClientSocket();
                         break;
 
@@ -278,23 +293,23 @@ namespace MultiPlayer {
                             if (msgArr[2] != "") {                      // If media name exists
                                 if (msgArr[1] != "") {                  // If media name exists
                                     if (msgArr[1] == mediaName) {       // If media names are the same
-                                        if (data.from != username) {    // Ask user to play media
+                                        if (data.from != options["username"]) {    // Ask user to play media
                                             DialogResult diagResult = MessageBox.Show("Play media", data.from + " wants to play " + mediaName + "\nClick YES to agree.", MessageBoxButtons.YesNo);
 
                                             // Send appropriate response
-                                            if (diagResult == DialogResult.Yes) msg = new mpMessage(username, mpMessage.Type.cmd, "playOK;");
-                                            else msg = new mpMessage(username, mpMessage.Type.cmd, "playDenied;");
-                                        } else msg = new mpMessage(username, mpMessage.Type.cmd, "playOK;");
+                                            if (diagResult == DialogResult.Yes) msg = new mpMessage(options["username"], mpMessage.Type.cmd, "playOK;");
+                                            else msg = new mpMessage(options["username"], mpMessage.Type.cmd, "playDenied;");
+                                        } else msg = new mpMessage(options["username"], mpMessage.Type.cmd, "playOK;");
                                     }
                                 } else {                                // Client selected wrong media
-                                    msg = new mpMessage(username, mpMessage.Type.message, username + " did not select the correct media file");
+                                    msg = new mpMessage(options["username"], mpMessage.Type.message, options["username"] + " did not select the correct media file");
                                 }
                             } else {                                    // If play request was received from server
                                 msg = new mpMessage();
                                 MediaController.PlayPause();
                             }
                         } else {                                        // Client did not select media yet
-                            msg = new mpMessage(username, mpMessage.Type.message, username + " did not select a media file");
+                            msg = new mpMessage(options["username"], mpMessage.Type.message, options["username"] + " did not select a media file");
                         }
 
                         if (msg != new mpMessage()) sendData(msg);
@@ -305,7 +320,7 @@ namespace MultiPlayer {
                             s = data.message;
                             MediaController.PlayPause();
                         } else {                                        // If pause request is being sent
-                            mpMessage msg1 = new mpMessage(username, mpMessage.Type.cmd, "pause;");
+                            mpMessage msg1 = new mpMessage(options["username"], mpMessage.Type.cmd, "pause;");
                             sendData(msg1);
                         }
                         break;
@@ -314,7 +329,7 @@ namespace MultiPlayer {
                         break;
                 }
             } else {
-                if (data.message.IndexOf(username) > -1) data.message = data.message.Replace(username, username + "(you)");
+                if (data.message.IndexOf(options["username"]) > -1) data.message = data.message.Replace(options["username"], options["username"] + "(you)");
                 s = data.message;
             }
 
@@ -368,13 +383,17 @@ namespace MultiPlayer {
 
         private void joinLobbyToolStripMenuItem_Click (object sender, EventArgs e) {
             if (joinLobbyToolStripMenuItem.Text == "Join lobby") {
-                if (form3 == null) form3 = new Form3(this);
+                if (options["username"] == string.Empty) changeUsernameToolStripMenuItem.PerformClick();
                 else {
-                    form3.BringToFront();
-                    form3.Focus();
+                    if (form3 == null)
+                        form3 = new Form3(this);
+                    else {
+                        form3.BringToFront();
+                        form3.Focus();
+                    }
                 }
             } else {
-                mpMessage disconnect = new mpMessage(username, mpMessage.Type.cmd, "disconnect;");
+                mpMessage disconnect = new mpMessage(options["username"], mpMessage.Type.cmd, "disconnect;");
                 sendData(disconnect);
 
                 closeClientSocket();
@@ -383,15 +402,10 @@ namespace MultiPlayer {
             }
         }
 
-        private void connectToolStripMenuItem_Click(object sender, EventArgs e) {
-            if (username == "") {
-                changeUsernameToolStripMenuItem.PerformClick();
-            }
-        }
-
         private void changeUsernameToolStripMenuItem_Click(object sender, EventArgs e) {
             if (clientSocket == null || clientSocket.Connected == false) {
-                if (form2 == null) form2 = new Form2(this);
+                if (form2 == null)
+                    form2 = options["username"] != string.Empty ? new Form2(this) : new Form2(this, false);
                 else {
                     form2.BringToFront();
                     form2.Focus();
@@ -401,7 +415,7 @@ namespace MultiPlayer {
 
         private void Form1_FormClosing (object sender, FormClosingEventArgs e) {
             if (clientSocket != null && clientSocket.Connected) {
-                sendData(new mpMessage(username, mpMessage.Type.cmd, "disconnect;"));
+                sendData(new mpMessage(options["username"], mpMessage.Type.cmd, "disconnect;"));
                 closeClientSocket();
             }
         }
@@ -420,9 +434,8 @@ namespace MultiPlayer {
                 string mediaName = (mediaPath != "" ? mediaPath.Substring(mediaPath.LastIndexOf("\\") + 1) : "");
 
                 if (clientSocket != null && clientSocket.Connected) {
-                    sendData(new mpMessage(username, mpMessage.Type.cmd, "play;" + mediaName + ";"));
-                } else
-                    MediaController.PlayPause();
+                    sendData(new mpMessage(options["username"], mpMessage.Type.cmd, "play;" + mediaName + ";"));
+                } else MediaController.PlayPause();
             } else {
                 toast.Show("You did not select a media file");
             }
