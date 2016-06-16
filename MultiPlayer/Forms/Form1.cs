@@ -58,6 +58,7 @@ namespace MultiPlayer {
             fileDiag.Title = "Open media file";
             fileDiag.FileName = "";
             fileDiag.Filter = "All Files (*.*)|*.*|.mp4 Files|*.mp4|.mkv Files|*.mkv";
+            fileDiag.Multiselect = true;
 
             gmh = new GlobalMouseHandler(); // Instantiate new global MouseEventHandler
             gmh.MouseMoved += new MouseMovedEvent(Mouse_Moved); // Add Mouse_Move event

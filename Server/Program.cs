@@ -21,32 +21,70 @@ namespace ConsoleApplication1 {
         private static bool playRequestPending = false;
         private static Timer playTimeout;
 
+        protected static int origRow;
+        protected static int origCol;
+
+        protected static void WriteAt(string s, int x, int y) {
+            try {
+                Console.SetCursorPosition(origCol + x, origRow + y);
+                Console.Write(s);
+            } catch (ArgumentOutOfRangeException e) {
+                Console.Clear();
+                Console.WriteLine(e.Message);
+            }
+        }
+
+        /// <summary>
+        /// Convert a list to a string
+        /// </summary>
+        /// <param name="list">The list you want to use</param>
+        /// <param name="start">Where the string should start</param>
+        /// <param name="end">Where the string should end</param>
+        /// <returns>A string containing list items.</returns>
+        private static string ListToString(List<string> list, int start, int end) {
+            string s = "";
+
+            for (int i = start; i < end; i++) {
+                s += (i != start ? " " + list[i] : list[i]);
+            }
+
+            return s;
+        }
+
         static void Main (string[] args) {
             Console.ForegroundColor = ConsoleColor.Green;
 
             bool exit = false;
             while (exit == false) {
-                Console.Write("Do you want to set up a manual server?\n\"y\" = Manual server options\n\"n\" = Default server options\n\n(y/n): ");
-                string line = Console.ReadLine();
-                char answer;
+                Console.Write("Do you want to set up the default server?\n\"y\" = Default server options\n\"n\" = Manual server options\n\n(y/n): ");
+                origRow = Console.CursorTop;
+                origCol = Console.CursorLeft;
 
-                if (line.Length > 0) {
-                    answer = line[0];
+                ConsoleKeyInfo line = Console.ReadKey();
+
+                char answer;
+                if (line.Key == ConsoleKey.Y || line.Key == ConsoleKey.N) {
+                    answer = line.Key.ToString()[0];
+                    WriteAt((answer == 'Y' ? "y\n" : "n\n"), 0, 0);
+                } else if (line.Key == ConsoleKey.Enter) {
+                    WriteAt("y\n", 0, 0);
+                    answer = 'Y';
                 } else {
                     Console.Clear();
-                    Console.WriteLine("You didn't enter an answer, please enter either \"y\" or \"n\".\n");
                     continue;
                 }
 
                 string ipRL = "";
-                if (answer == 'y') {
+                if (answer == 'Y') {
+                    ipRL = "0.0.0.0:733";
+                } else if (answer == 'N') {
+                    Console.Write("\n======= MultiPlayer Server Options =======\n");
+
                     Console.Write("\nEnter ip address + port (ex. {127.0.0.1:733} press ENTER to bind to all ip's): ");
                     ipRL = Console.ReadLine();
-                } else if (answer == 'n') {
-                    ipRL = "0.0.0.0:733";
                 } else {
                     Console.Clear();
-                    Console.WriteLine("\"" + line + "\" is not a valid answer, please enter \"y\" or \"n\".\n");
+                    Console.WriteLine("\"" + line.Key.ToString() + "\" is not a valid answer, please enter \"y\" or \"n\".\n");
                     continue;
                 }
 
@@ -64,19 +102,25 @@ namespace ConsoleApplication1 {
                     serverHandlerThread.Start();
 
                     while (true) { // ======================= Commands go here =======================
-                        string[] ans = { Console.ReadLine() };
-                        ans = ans[0].Split(' ');
+                        List<string> ans = new List<string>();
+                        ans.Add(Console.ReadLine());
 
-                        switch (ans[0]) {
-                            default:
-                                Console.WriteLine("\"" + ans + "\" was not recognized as a MultiPlayerServer command.");
-                                break;
-                            case "say":
-                                broadcast(new mpMessage("Server", mpMessage.Type.message, ans[1]));
-                                break;
+                        try {
+                            ans.AddRange(ans[0].Split(' '));
+
+                            switch (ans[1]) {
+                                default:
+                                    Console.WriteLine("\"" + ans + "\" was not recognized as a MultiPlayerServer command.");
+                                    break;
+                                case "say":
+                                    broadcast(new mpMessage("Server", mpMessage.Type.message, ListToString(ans, 2, ans.Count)));
+                                    break;
+                            }
+
+                            Console.WriteLine("Server: " + ListToString(ans, 2, ans.Count) + "\n");
+                        } catch(Exception ex) {
+                            Console.WriteLine(ex.ToString());
                         }
-
-                        Console.WriteLine("You wrote: " + ans + "\n");
                     }
 
                 } else {
@@ -91,7 +135,7 @@ namespace ConsoleApplication1 {
                 serverSocket.Start();
                 runServer = true;
                 
-                Console.WriteLine("\n=========== MultiPlayer Server ===========\nServer started on " + serverSocket.LocalEndpoint);
+                Console.WriteLine("\n=========== MultiPlayer Server ===========\nServer started on " + serverSocket.LocalEndpoint + "\n");
 
                 while (runServer == true) {
                     clientSocket = serverSocket.AcceptTcpClient();
@@ -165,30 +209,33 @@ namespace ConsoleApplication1 {
         }
 
         public static void broadcast (mpMessage data) {
-            List<DictionaryEntry> remove = new List<DictionaryEntry>();
-            foreach (DictionaryEntry Item in clientsList) {
-                TcpClient broadcastSocket = (TcpClient)Item.Value;
-                try {
-                    NetworkStream broadcastStream = broadcastSocket.GetStream();
-                    byte[] broadcastBytes = data.ToBytes();
+            if (data.from != "Server") {
+                List<DictionaryEntry> remove = new List<DictionaryEntry>();
+                foreach (DictionaryEntry Item in clientsList) {
+                    TcpClient broadcastSocket = (TcpClient)Item.Value;
+                    try {
+                        NetworkStream broadcastStream = broadcastSocket.GetStream();
+                        byte[] broadcastBytes = data.ToBytes();
 
-                    broadcastStream.Write(broadcastBytes, 0, broadcastBytes.Length);
-                    broadcastStream.Flush();
-                } catch (Exception ex) {
-                    while (broadcastSocket.Connected == true) broadcastSocket.Close();
-                    broadcastSocket = null;
-                    remove.Add(Item);
+                        broadcastStream.Write(broadcastBytes, 0, broadcastBytes.Length);
+                        broadcastStream.Flush();
+                    } catch (Exception ex) {
+                        while (broadcastSocket.Connected == true)
+                            broadcastSocket.Close();
+                        broadcastSocket = null;
+                        remove.Add(Item);
 
-                    Console.WriteLine(ex.ToString());
+                        Console.WriteLine(ex.ToString());
+                    }
                 }
-            }
+                
+                foreach (DictionaryEntry Item in remove) {
+                    clientsList.Remove(Item.Key);
+                    clientPlayOKList.Remove(Item.Key.ToString());
+                }
 
-            foreach (DictionaryEntry Item in remove) {
-                clientsList.Remove(Item.Key);
-                clientPlayOKList.Remove(Item.Key.ToString());
+                Console.WriteLine("Broadcast: " + data.ToString());
             }
-
-            Console.WriteLine("Broadcast: " + data.ToString());
         }  //end broadcast function
 
         private static List<KeyValuePair<string, bool>> checkPlayOK() {

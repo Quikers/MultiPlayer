@@ -77,7 +77,6 @@ namespace MultiPlayer {
         }
 
         public void showToolbar() {
-            MessageBox.Show("");
             pnl_toolbar.Show();
         }
 
