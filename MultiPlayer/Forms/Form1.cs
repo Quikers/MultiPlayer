@@ -52,7 +52,7 @@ namespace MultiPlayer {
 
             checkForUpdatesToolStripMenuItem.Visible = false;
 
-            toast = new Toast(this, mediaPlayer1.Location);
+            toast = new Toast(this, MediaController.Location);
 
             fileDiag = new OpenFileDialog();
             fileDiag.Title = "Open media file";
@@ -62,7 +62,7 @@ namespace MultiPlayer {
 
             gmh = new GlobalMouseHandler(); // Instantiate new global MouseEventHandler
             gmh.MouseMoved += new MouseMovedEvent(Mouse_Moved); // Add Mouse_Move event
-            gmh.LMBDoubleClick += new MouseMovedEvent(LMB_DoubleClick); // Add Mouse_Move event
+            gmh.LmbDoubleClick += new MouseMovedEvent(LMB_DoubleClick); // Add Mouse_Move event
             Application.AddMessageFilter(gmh);
         }
 
@@ -88,7 +88,7 @@ namespace MultiPlayer {
         /// EventHandler for mouse movement inside the form.
         /// </summary>
         private void Mouse_Moved() {
-            Size mpSize = mediaPlayer1.Size;
+            Size mpSize = MediaController.Size;
             Point mPos = Cursor.Position;
             int mpY = 52;
 
@@ -97,18 +97,19 @@ namespace MultiPlayer {
                 mPos.Y > this.Location.Y + mpSize.Height - 32 &&
                 mPos.Y < this.Location.Y + mpY + mpSize.Height) {
 
-                mediaPlayer1.showToolbar();
+                MediaController.ShowToolbar();
 
-            } else mediaPlayer1.hideToolbar();
+            } else
+                MediaController.HideToolbar();
 
-            if (mediaPlayer1.fullscreen == true) {
+            if ( MediaController.Fullscreen == true) {
                 if (menuStrip1.Visible == false) {
                     if (mPos.Y < menuStrip1.Size.Height) {
                         menuStrip1.Visible = true;
                         menuStrip1.Focus();
                     }
                 } else if (mPos.Y > menuStrip1.Size.Height && menuStrip1.Focused == true)
-                    mediaPlayer1.Focus();
+                    MediaController.Focus();
             }
         }
 
@@ -117,7 +118,7 @@ namespace MultiPlayer {
         /// </summary>
         private void LMB_DoubleClick() {
             Point mPos = Cursor.Position;
-            Size mpSize = mediaPlayer1.Size;
+            Size mpSize = MediaController.Size;
             int mpY = 52;
 
             if (mPos.X > this.Location.X &&
@@ -148,14 +149,14 @@ namespace MultiPlayer {
                 this.Size = Screen.GetBounds(this.Location).Size;
 
                 menuStrip1.Visible = false;
-                mediaPlayer1.fullscreen = true;
+                MediaController.Fullscreen = true;
             } else {
                 this.FormBorderStyle = savedBorder;
                 this.Location = savedLoc;
                 this.Size = savedSize;
 
                 menuStrip1.Visible = true;
-                mediaPlayer1.fullscreen = false;
+                MediaController.Fullscreen = false;
             }
         }
 
@@ -164,7 +165,7 @@ namespace MultiPlayer {
                 if (fileDiag.FileNames.Length > 0) {
                     for (int i = 0; i < fileDiag.FileNames.Length; i++) {
                         string filePath = "file:///" + fileDiag.FileNames[i].Replace("\\", "/").Replace(" ", "%20");
-                        mediaPlayer1.addMedia(fileDiag.FileNames[i], fileDiag.SafeFileNames[i], null);
+                        MediaController.AddMedia(fileDiag.FileNames[i], fileDiag.SafeFileNames[i], null);
                     }
                 } else toast.Show("Please select a file.");
             }
@@ -268,7 +269,7 @@ namespace MultiPlayer {
                         break;
 
                     case "play": // ===================== Request media play =====================
-                        string mediaPath = mediaPlayer1.player.mediaDescription.title;
+                        string mediaPath = MediaController.MediaPlayer.mediaDescription.title;
                         string mediaName = (mediaPath != "" ? mediaPath.Substring(mediaPath.LastIndexOf("\\") + 1) : "");
 
                         mpMessage msg = new mpMessage();
@@ -290,7 +291,7 @@ namespace MultiPlayer {
                                 }
                             } else {                                    // If play request was received from server
                                 msg = new mpMessage();
-                                mediaPlayer1.playPause();
+                                MediaController.PlayPause();
                             }
                         } else {                                        // Client did not select media yet
                             msg = new mpMessage(username, mpMessage.Type.message, username + " did not select a media file");
@@ -302,7 +303,7 @@ namespace MultiPlayer {
                     case "pause": // ===================== Request media pause =====================
                         if (msgArr[1] != "") {
                             s = data.message;
-                            mediaPlayer1.playPause();
+                            MediaController.PlayPause();
                         } else {                                        // If pause request is being sent
                             mpMessage msg1 = new mpMessage(username, mpMessage.Type.cmd, "pause;");
                             sendData(msg1);
@@ -346,7 +347,7 @@ namespace MultiPlayer {
         }
 
         private void Form1_Layout(object sender, LayoutEventArgs e) {
-            mediaPlayer1.SendToBack();
+            MediaController.SendToBack();
         }
 
         private void exitToolStripMenuItem_Click (object sender, EventArgs e) {
@@ -406,45 +407,46 @@ namespace MultiPlayer {
         }
 
         private void mediaPlayer1_player_MediaPlayerMediaChanged(object sender, EventArgs e) {
-            string title = mediaPlayer1.player.mediaDescription.title;
+            string title = MediaController.MediaPlayer.mediaDescription.title;
 
             toast.Show("Now playing: " + title.Substring(title.LastIndexOf("\\") + 1));
         }
 
         private void playToolStripMenuItem1_Click(object sender, EventArgs e) {
-            if (mediaPlayer1.player.playlist.items.count > 0) {
-                mediaPlayer1.playPause();
+            if ( MediaController.MediaPlayer.playlist.items.count > 0) {
+                MediaController.PlayPause();
                 
-                string mediaPath = mediaPlayer1.player.mediaDescription.title;
+                string mediaPath = MediaController.MediaPlayer.mediaDescription.title;
                 string mediaName = (mediaPath != "" ? mediaPath.Substring(mediaPath.LastIndexOf("\\") + 1) : "");
 
                 if (clientSocket != null && clientSocket.Connected) {
                     sendData(new mpMessage(username, mpMessage.Type.cmd, "play;" + mediaName + ";"));
-                } else mediaPlayer1.playPause();
+                } else
+                    MediaController.PlayPause();
             } else {
                 toast.Show("You did not select a media file");
             }
 
             gmh = new GlobalMouseHandler(); // Instantiate new global MouseEventHandler
             gmh.MouseMoved += new MouseMovedEvent(Mouse_Moved); // Add Mouse_Move event
-            gmh.LMBDoubleClick += new MouseMovedEvent(LMB_DoubleClick); // Add Mouse_Move event
+            gmh.LmbDoubleClick += new MouseMovedEvent(LMB_DoubleClick); // Add Mouse_Move event
             Application.AddMessageFilter(gmh);
         }
 
         private void stopToolStripMenuItem_Click(object sender, EventArgs e) {
-            mediaPlayer1.stop();
+            MediaController.Stop();
         }
 
         private void previousToolStripMenuItem_Click(object sender, EventArgs e) {
-            mediaPlayer1.prev();
+            MediaController.Prev();
         }
 
         private void nextToolStripMenuItem_Click(object sender, EventArgs e) {
-            mediaPlayer1.next();
+            MediaController.Next();
         }
 
         private void loopToolStripMenuItem_Click(object sender, EventArgs e) {
-            mediaPlayer1.toggleLoop();
+            MediaController.ToggleLoop();
         }
 
         private void fullscreenToolStripMenuItem_Click(object sender, EventArgs e) {
@@ -455,27 +457,28 @@ namespace MultiPlayer {
         }
 
         private void muteToolStripMenuItem_Click(object sender, EventArgs e) {
-            mediaPlayer1.toggleMute();
+            MediaController.ToggleMute();
         }
 
         private void playToolStripMenuItem_Click(object sender, EventArgs e) {
-            if (mediaPlayer1.player.playlist.isPlaying == true) playToolStripMenuItem1.Text = "Pause";
+            if ( MediaController.MediaPlayer.playlist.isPlaying == true) playToolStripMenuItem1.Text = "Pause";
             else playToolStripMenuItem1.Text = "Play";
         }
 
         private void openMediaToolStripMenuItem_Click(object sender, EventArgs e) {
             if (clientSocket != null && clientSocket.Connected == true) {
-                if (mediaPlayer1.player.playlist.isPlaying == false) openMedia();
+                if ( MediaController.MediaPlayer.playlist.isPlaying == false) openMedia();
                 else toast.Show("You cannot open media while connected to a server and playing media.");
             } else
             {
-                if( mediaPlayer1.player.playlist.items.count > 0 ) mediaPlayer1.playPause();
+                if( MediaController.MediaPlayer.playlist.items.count > 0 )
+                    MediaController.PlayPause();
                 openMedia();
             }
         }
 
         private void menuStrip1_Leave(object sender, EventArgs e) {
-            if (mediaPlayer1.fullscreen == true) {
+            if ( MediaController.Fullscreen == true) {
                 menuStrip1.Visible = false;
             }
         }

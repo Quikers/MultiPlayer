@@ -51,7 +51,7 @@ namespace MultiPlayer {
             this.helpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.checkForUpdatesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.mediaPlayer1 = new MultiPlayer.mediaPlayer();
+            this.MediaController = new MultiPlayer.MediaController();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -65,8 +65,7 @@ namespace MultiPlayer {
             this.helpToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
-            this.menuStrip1.Padding = new System.Windows.Forms.Padding(8, 2, 0, 2);
-            this.menuStrip1.Size = new System.Drawing.Size(1045, 28);
+            this.menuStrip1.Size = new System.Drawing.Size(784, 24);
             this.menuStrip1.TabIndex = 1;
             this.menuStrip1.Text = "menuStrip1";
             this.menuStrip1.Leave += new System.EventHandler(this.menuStrip1_Leave);
@@ -77,14 +76,14 @@ namespace MultiPlayer {
             this.openMediaToolStripMenuItem,
             this.exitToolStripMenuItem});
             this.fileToolStripMenuItem.Name = "fileToolStripMenuItem";
-            this.fileToolStripMenuItem.Size = new System.Drawing.Size(44, 24);
+            this.fileToolStripMenuItem.Size = new System.Drawing.Size(37, 20);
             this.fileToolStripMenuItem.Text = "File";
             // 
             // openMediaToolStripMenuItem
             // 
             this.openMediaToolStripMenuItem.Name = "openMediaToolStripMenuItem";
             this.openMediaToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.O)));
-            this.openMediaToolStripMenuItem.Size = new System.Drawing.Size(219, 26);
+            this.openMediaToolStripMenuItem.Size = new System.Drawing.Size(182, 22);
             this.openMediaToolStripMenuItem.Text = "Open media";
             this.openMediaToolStripMenuItem.Click += new System.EventHandler(this.openMediaToolStripMenuItem_Click);
             // 
@@ -92,7 +91,7 @@ namespace MultiPlayer {
             // 
             this.exitToolStripMenuItem.Name = "exitToolStripMenuItem";
             this.exitToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Alt | System.Windows.Forms.Keys.F4)));
-            this.exitToolStripMenuItem.Size = new System.Drawing.Size(219, 26);
+            this.exitToolStripMenuItem.Size = new System.Drawing.Size(182, 22);
             this.exitToolStripMenuItem.Text = "Exit";
             this.exitToolStripMenuItem.Click += new System.EventHandler(this.exitToolStripMenuItem_Click);
             // 
@@ -104,7 +103,7 @@ namespace MultiPlayer {
             this.toolStripSeparator1,
             this.changeUsernameToolStripMenuItem});
             this.connectToolStripMenuItem.Name = "connectToolStripMenuItem";
-            this.connectToolStripMenuItem.Size = new System.Drawing.Size(75, 24);
+            this.connectToolStripMenuItem.Size = new System.Drawing.Size(64, 20);
             this.connectToolStripMenuItem.Text = "Connect";
             this.connectToolStripMenuItem.Click += new System.EventHandler(this.connectToolStripMenuItem_Click);
             // 
@@ -112,7 +111,7 @@ namespace MultiPlayer {
             // 
             this.startServerToolStripMenuItem.Name = "startServerToolStripMenuItem";
             this.startServerToolStripMenuItem.ShortcutKeys = System.Windows.Forms.Keys.F2;
-            this.startServerToolStripMenuItem.Size = new System.Drawing.Size(226, 26);
+            this.startServerToolStripMenuItem.Size = new System.Drawing.Size(189, 22);
             this.startServerToolStripMenuItem.Text = "Start server";
             this.startServerToolStripMenuItem.Click += new System.EventHandler(this.startServerToolStripMenuItem_Click);
             // 
@@ -120,20 +119,20 @@ namespace MultiPlayer {
             // 
             this.joinLobbyToolStripMenuItem.Name = "joinLobbyToolStripMenuItem";
             this.joinLobbyToolStripMenuItem.ShortcutKeys = System.Windows.Forms.Keys.F3;
-            this.joinLobbyToolStripMenuItem.Size = new System.Drawing.Size(226, 26);
+            this.joinLobbyToolStripMenuItem.Size = new System.Drawing.Size(189, 22);
             this.joinLobbyToolStripMenuItem.Text = "Join lobby";
             this.joinLobbyToolStripMenuItem.Click += new System.EventHandler(this.joinLobbyToolStripMenuItem_Click);
             // 
             // toolStripSeparator1
             // 
             this.toolStripSeparator1.Name = "toolStripSeparator1";
-            this.toolStripSeparator1.Size = new System.Drawing.Size(223, 6);
+            this.toolStripSeparator1.Size = new System.Drawing.Size(186, 6);
             // 
             // changeUsernameToolStripMenuItem
             // 
             this.changeUsernameToolStripMenuItem.Name = "changeUsernameToolStripMenuItem";
             this.changeUsernameToolStripMenuItem.ShortcutKeys = System.Windows.Forms.Keys.F4;
-            this.changeUsernameToolStripMenuItem.Size = new System.Drawing.Size(226, 26);
+            this.changeUsernameToolStripMenuItem.Size = new System.Drawing.Size(189, 22);
             this.changeUsernameToolStripMenuItem.Text = "Change username";
             this.changeUsernameToolStripMenuItem.Click += new System.EventHandler(this.changeUsernameToolStripMenuItem_Click);
             // 
@@ -148,7 +147,7 @@ namespace MultiPlayer {
             this.fullscreenToolStripMenuItem,
             this.muteToolStripMenuItem});
             this.playToolStripMenuItem.Name = "playToolStripMenuItem";
-            this.playToolStripMenuItem.Size = new System.Drawing.Size(48, 24);
+            this.playToolStripMenuItem.Size = new System.Drawing.Size(41, 20);
             this.playToolStripMenuItem.Text = "Play";
             this.playToolStripMenuItem.Click += new System.EventHandler(this.playToolStripMenuItem_Click);
             // 
@@ -156,7 +155,7 @@ namespace MultiPlayer {
             // 
             this.playToolStripMenuItem1.Name = "playToolStripMenuItem1";
             this.playToolStripMenuItem1.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.P)));
-            this.playToolStripMenuItem1.Size = new System.Drawing.Size(198, 26);
+            this.playToolStripMenuItem1.Size = new System.Drawing.Size(167, 22);
             this.playToolStripMenuItem1.Text = "Play";
             this.playToolStripMenuItem1.Click += new System.EventHandler(this.playToolStripMenuItem1_Click);
             // 
@@ -164,7 +163,7 @@ namespace MultiPlayer {
             // 
             this.stopToolStripMenuItem.Name = "stopToolStripMenuItem";
             this.stopToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.S)));
-            this.stopToolStripMenuItem.Size = new System.Drawing.Size(198, 26);
+            this.stopToolStripMenuItem.Size = new System.Drawing.Size(167, 22);
             this.stopToolStripMenuItem.Text = "Stop";
             this.stopToolStripMenuItem.Click += new System.EventHandler(this.stopToolStripMenuItem_Click);
             // 
@@ -172,7 +171,7 @@ namespace MultiPlayer {
             // 
             this.previousToolStripMenuItem.Name = "previousToolStripMenuItem";
             this.previousToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.B)));
-            this.previousToolStripMenuItem.Size = new System.Drawing.Size(198, 26);
+            this.previousToolStripMenuItem.Size = new System.Drawing.Size(167, 22);
             this.previousToolStripMenuItem.Text = "Back";
             this.previousToolStripMenuItem.Click += new System.EventHandler(this.previousToolStripMenuItem_Click);
             // 
@@ -180,7 +179,7 @@ namespace MultiPlayer {
             // 
             this.nextToolStripMenuItem.Name = "nextToolStripMenuItem";
             this.nextToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.N)));
-            this.nextToolStripMenuItem.Size = new System.Drawing.Size(198, 26);
+            this.nextToolStripMenuItem.Size = new System.Drawing.Size(167, 22);
             this.nextToolStripMenuItem.Text = "Next";
             this.nextToolStripMenuItem.Click += new System.EventHandler(this.nextToolStripMenuItem_Click);
             // 
@@ -189,7 +188,7 @@ namespace MultiPlayer {
             this.loopToolStripMenuItem.CheckOnClick = true;
             this.loopToolStripMenuItem.Name = "loopToolStripMenuItem";
             this.loopToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.L)));
-            this.loopToolStripMenuItem.Size = new System.Drawing.Size(198, 26);
+            this.loopToolStripMenuItem.Size = new System.Drawing.Size(167, 22);
             this.loopToolStripMenuItem.Text = "Loop";
             this.loopToolStripMenuItem.Click += new System.EventHandler(this.loopToolStripMenuItem_Click);
             // 
@@ -197,7 +196,7 @@ namespace MultiPlayer {
             // 
             this.fullscreenToolStripMenuItem.Name = "fullscreenToolStripMenuItem";
             this.fullscreenToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.F)));
-            this.fullscreenToolStripMenuItem.Size = new System.Drawing.Size(198, 26);
+            this.fullscreenToolStripMenuItem.Size = new System.Drawing.Size(167, 22);
             this.fullscreenToolStripMenuItem.Text = "Fullscreen";
             this.fullscreenToolStripMenuItem.Click += new System.EventHandler(this.fullscreenToolStripMenuItem_Click);
             // 
@@ -205,7 +204,7 @@ namespace MultiPlayer {
             // 
             this.muteToolStripMenuItem.Name = "muteToolStripMenuItem";
             this.muteToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.M)));
-            this.muteToolStripMenuItem.Size = new System.Drawing.Size(198, 26);
+            this.muteToolStripMenuItem.Size = new System.Drawing.Size(167, 22);
             this.muteToolStripMenuItem.Text = "Mute";
             this.muteToolStripMenuItem.Click += new System.EventHandler(this.muteToolStripMenuItem_Click);
             // 
@@ -215,43 +214,42 @@ namespace MultiPlayer {
             this.aboutToolStripMenuItem,
             this.checkForUpdatesToolStripMenuItem});
             this.helpToolStripMenuItem.Name = "helpToolStripMenuItem";
-            this.helpToolStripMenuItem.Size = new System.Drawing.Size(53, 24);
+            this.helpToolStripMenuItem.Size = new System.Drawing.Size(44, 20);
             this.helpToolStripMenuItem.Text = "Help";
             // 
             // aboutToolStripMenuItem
             // 
             this.aboutToolStripMenuItem.Name = "aboutToolStripMenuItem";
-            this.aboutToolStripMenuItem.Size = new System.Drawing.Size(203, 26);
+            this.aboutToolStripMenuItem.Size = new System.Drawing.Size(170, 22);
             this.aboutToolStripMenuItem.Text = "About";
             this.aboutToolStripMenuItem.Click += new System.EventHandler(this.aboutToolStripMenuItem_Click);
             // 
             // checkForUpdatesToolStripMenuItem
             // 
             this.checkForUpdatesToolStripMenuItem.Name = "checkForUpdatesToolStripMenuItem";
-            this.checkForUpdatesToolStripMenuItem.Size = new System.Drawing.Size(203, 26);
+            this.checkForUpdatesToolStripMenuItem.Size = new System.Drawing.Size(170, 22);
             this.checkForUpdatesToolStripMenuItem.Text = "Check for updates";
             this.checkForUpdatesToolStripMenuItem.Click += new System.EventHandler(this.checkForUpdatesToolStripMenuItem_Click);
             // 
             // mediaPlayer1
             // 
-            this.mediaPlayer1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.mediaPlayer1.Location = new System.Drawing.Point(0, 28);
-            this.mediaPlayer1.Margin = new System.Windows.Forms.Padding(5);
-            this.mediaPlayer1.Name = "mediaPlayer1";
-            this.mediaPlayer1.Size = new System.Drawing.Size(1045, 601);
-            this.mediaPlayer1.TabIndex = 2;
+            this.MediaController.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.MediaController.Location = new System.Drawing.Point(0, 24);
+            this.MediaController.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.MediaController.Name = "mediaPlayer1";
+            this.MediaController.Size = new System.Drawing.Size(784, 487);
+            this.MediaController.TabIndex = 2;
             // 
             // Form1
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1045, 629);
-            this.Controls.Add(this.mediaPlayer1);
+            this.ClientSize = new System.Drawing.Size(784, 511);
+            this.Controls.Add( this.MediaController );
             this.Controls.Add(this.menuStrip1);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MainMenuStrip = this.menuStrip1;
-            this.Margin = new System.Windows.Forms.Padding(4);
-            this.MinimumSize = new System.Drawing.Size(594, 420);
+            this.MinimumSize = new System.Drawing.Size(450, 349);
             this.Name = "Form1";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "MultiPlayer";
@@ -265,7 +263,7 @@ namespace MultiPlayer {
         }
 
         #endregion
-        private mediaPlayer mediaPlayer1;
+        private MediaController MediaController;
         private System.Windows.Forms.MenuStrip menuStrip1;
         private System.Windows.Forms.ToolStripMenuItem fileToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem openMediaToolStripMenuItem;
