@@ -1,19 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Drawing;
-using System.Data;
-using System.Linq;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace MultiPlayer
 {
     public partial class MediaController : UserControl
     {
-        private Toolbar _toolbar;
         Thread _th;
 
         private System.Windows.Forms.Timer _t = new System.Windows.Forms.Timer();
@@ -27,8 +19,7 @@ namespace MultiPlayer
         {
             InitializeComponent();
 
-            _th = new Thread( KeepBack );
-            _toolbar = new Toolbar();
+            _th = new Thread( KeepBack );            
         }
         
         public void ShowToolbar()
@@ -38,7 +29,7 @@ namespace MultiPlayer
 
         public void HideToolbar()
         {
-            _toolbar.pnl_toolbar.Hide();
+            //_toolbar.pnl_toolbar.Hide();
         }
 
         public void AddMedia( string filePath, object name, object options )
@@ -48,7 +39,7 @@ namespace MultiPlayer
 
         public void PlayPause()
         {
-            if( _stopped == true )
+            if( _stopped )
             {
                 MediaPlayer.playlist.play();
                 _stopped = false;
@@ -77,17 +68,17 @@ namespace MultiPlayer
             if( volume > -1 && volume < 201 )
             {
                 MediaPlayer.volume = volume;
-                _toolbar.tb_volume.Value = volume;
+                //_toolbar.tb_volume.Value = volume;
             }
             else if( volume > 200 )
             {
                 MediaPlayer.volume = 200;
-                _toolbar.tb_volume.Value = 200;
+               //_toolbar.tb_volume.Value = 200;
             }
             else if( volume < 0 )
             {
                 MediaPlayer.volume = 0;
-                _toolbar.tb_volume.Value = 0;
+                //_toolbar.tb_volume.Value = 0;
             }
         }
 
@@ -124,7 +115,7 @@ namespace MultiPlayer
 
         private void tb_volume_ValueChanged( object sender, EventArgs e )
         {
-            MediaPlayer.volume = _toolbar.tb_volume.Value;
+            //MediaPlayer.volume = _toolbar.tb_volume.Value;
         }
 
         private void player_MediaPlayerPositionChanged( object sender, AxAXVLC.DVLCEvents_MediaPlayerPositionChangedEvent e )
@@ -135,16 +126,8 @@ namespace MultiPlayer
         private void mediaPlayer1_player_MediaPlayerStopped( object sender, EventArgs e )
         {
 
-        }
+        }        
+	
 
-        private void btn_playpause_Click( object sender, EventArgs e )
-        {
-            if( _toolbar.btn_playpause.Text == "Play" )
-                _toolbar.btn_playpause.Text = "Pause";
-            else
-                _toolbar.btn_playpause.Text = "Play";
-
-            PlayPause();
-        }
     }
 }

@@ -30,8 +30,7 @@
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MediaController));
             this.MediaPlayer = new AxAXVLC.AxVLCPlugin2();
-            this.toolbar2 = new MultiPlayer.Toolbar();
-            this.toolbar1 = new MultiPlayer.Toolbar();
+            this._toolbar = new MultiPlayer.Toolbar();
             ((System.ComponentModel.ISupportInitialize)(this.MediaPlayer)).BeginInit();
             this.SuspendLayout();
             // 
@@ -45,31 +44,21 @@
             this.MediaPlayer.Size = new System.Drawing.Size(538, 392);
             this.MediaPlayer.TabIndex = 2;
             // 
-            // toolbar2
+            // _toolbar
             // 
-            this.toolbar2.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
+            this._toolbar.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.toolbar2.Location = new System.Drawing.Point(0, 341);
-            this.toolbar2.Name = "toolbar2";
-            this.toolbar2.Size = new System.Drawing.Size(538, 51);
-            this.toolbar2.TabIndex = 3;
-            // 
-            // toolbar1
-            // 
-            this.toolbar1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.toolbar1.Location = new System.Drawing.Point(3, 341);
-            this.toolbar1.Name = "toolbar1";
-            this.toolbar1.Size = new System.Drawing.Size(535, 51);
-            this.toolbar1.TabIndex = 1;
+            this._toolbar.Location = new System.Drawing.Point(0, 338);
+            this._toolbar.Name = "_toolbar";
+            this._toolbar.Size = new System.Drawing.Size(538, 51);
+            this._toolbar.TabIndex = 3;
             // 
             // MediaController
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.Controls.Add(this.toolbar2);
+            this.Controls.Add(this._toolbar);
             this.Controls.Add(this.MediaPlayer);
-            this.Controls.Add(this.toolbar1);
             this.Name = "MediaController";
             this.Size = new System.Drawing.Size(538, 392);
             ((System.ComponentModel.ISupportInitialize)(this.MediaPlayer)).EndInit();
@@ -78,8 +67,7 @@
         }
 
         #endregion
-        private Toolbar toolbar1;
         public AxAXVLC.AxVLCPlugin2 MediaPlayer;
-        private Toolbar toolbar2;
+        private Toolbar _toolbar;
     }
 }
