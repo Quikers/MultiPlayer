@@ -21,7 +21,10 @@ namespace MultiPlayer {
 
             form1 = _form1;
             this.isUsernameSet = isUsernameSet;
-            label2.Text = "Current username: " + form1.options["username"];
+
+            textBox1.Text = form1.options["username"];
+            textBox1.Focus();
+            textBox1.SelectAll();
         }
 
         private void form2_closing(object sender, FormClosingEventArgs e) {
@@ -33,13 +36,13 @@ namespace MultiPlayer {
                 try {
                     form1.options["username"] = textBox1.Text;
 
-                    form1.saveOptions("Settings.ini");
+                    form1.saveOptions("Settings.ini", null);
                 } catch (Exception ex) {
                     Console.WriteLine("Exception: " + ex.Message);
                 }
 
                 form1.options["username"] = textBox1.Text;
-                label2.Text = "Current username: " + form1.options["username"];
+                textBox1.Text = form1.options["username"];
 
                 if (!isUsernameSet) form1.joinLobbyToolStripMenuItem.PerformClick();
                 this.Close();

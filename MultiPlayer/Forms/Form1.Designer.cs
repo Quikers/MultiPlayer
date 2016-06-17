@@ -51,6 +51,7 @@ namespace MultiPlayer {
             this.helpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.checkForUpdatesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.btn_chat = new System.Windows.Forms.ToolStripMenuItem();
             this.MediaController = new MultiPlayer.MediaController();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
@@ -61,6 +62,7 @@ namespace MultiPlayer {
             this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.fileToolStripMenuItem,
             this.connectToolStripMenuItem,
+            this.btn_chat,
             this.playToolStripMenuItem,
             this.helpToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
@@ -230,12 +232,19 @@ namespace MultiPlayer {
             this.checkForUpdatesToolStripMenuItem.Text = "Check for updates";
             this.checkForUpdatesToolStripMenuItem.Click += new System.EventHandler(this.checkForUpdatesToolStripMenuItem_Click);
             // 
-            // mediaPlayer1
+            // btn_chat
+            // 
+            this.btn_chat.Name = "btn_chat";
+            this.btn_chat.Size = new System.Drawing.Size(81, 20);
+            this.btn_chat.Text = "Toggle chat";
+            this.btn_chat.Click += new System.EventHandler(this.btn_chat_Click);
+            // 
+            // MediaController
             // 
             this.MediaController.Dock = System.Windows.Forms.DockStyle.Fill;
             this.MediaController.Location = new System.Drawing.Point(0, 24);
-            this.MediaController.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
-            this.MediaController.Name = "mediaPlayer1";
+            this.MediaController.Margin = new System.Windows.Forms.Padding(4);
+            this.MediaController.Name = "MediaController";
             this.MediaController.Size = new System.Drawing.Size(784, 487);
             this.MediaController.TabIndex = 2;
             // 
@@ -244,7 +253,7 @@ namespace MultiPlayer {
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(784, 511);
-            this.Controls.Add( this.MediaController );
+            this.Controls.Add(this.MediaController);
             this.Controls.Add(this.menuStrip1);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MainMenuStrip = this.menuStrip1;
@@ -283,6 +292,7 @@ namespace MultiPlayer {
         private System.Windows.Forms.ToolStripMenuItem changeUsernameToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem fullscreenToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem muteToolStripMenuItem;
+        private ToolStripMenuItem btn_chat;
     }
 }
 

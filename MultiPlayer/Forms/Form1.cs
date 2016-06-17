@@ -45,7 +45,7 @@ namespace MultiPlayer {
 
         private Point savedLoc = new Point(0, 0);
         private Size savedSize = new Size(0, 0);
-        private FormBorderStyle savedBorder = new FormBorderStyle();
+        private FormBorderStyle savedBorder;
 
         public Form1() {
             InitializeComponent();
@@ -53,13 +53,14 @@ namespace MultiPlayer {
             checkForUpdatesToolStripMenuItem.Visible = false;
 
             toast = new Toast(this, MediaController.Location);
-            options = loadOptions("Settings.ini");
+            options = initOptions();
 
-            fileDiag = new OpenFileDialog();
-            fileDiag.Title = "Open media file";
-            fileDiag.FileName = "";
-            fileDiag.Filter = "All Files (*.*)|*.*|.mp4 Files|*.mp4|.mkv Files|*.mkv";
-            fileDiag.Multiselect = true;
+            fileDiag = new OpenFileDialog {
+                Title = "Open media file",
+                FileName = "",
+                Filter = "All Files (*.*)|*.*|.mp4 Files|*.mp4|.mkv Files|*.mkv",
+                Multiselect = true
+            };
 
             gmh = new GlobalMouseHandler(); // Instantiate new global MouseEventHandler
             gmh.MouseMoved += new MouseMovedEvent(Mouse_Moved); // Add Mouse_Move event
@@ -68,17 +69,22 @@ namespace MultiPlayer {
         }
 
         /// <summary>
-        /// Saves the given option to the Settings.ini file.
+        /// Initializes the options. If certain options don't exist, they will be made.
         /// </summary>
-        public void saveOptions(string filePath) {
-            string s = "";
+        /// <returns>A dictionary of options to be saved in the global options variable.</returns>
+        private Dictionary<string, string> initOptions() {
+            string[] allOptions = { "username", "chatEnabled" }; // These are all the names for possible options
 
-            foreach (KeyValuePair<string, string> option in options) {
-                s += option.Key + "=" + option.Value + "\n";
+            if (!File.Exists("Settings.ini")) File.Create("Settings.ini");
+            Dictionary<string, string> settings = loadOptions("Settings.ini");
+
+            foreach (string option in allOptions) {
+                if (!settings.ContainsKey(option)) settings.Add(option, "");
             }
 
-            File.WriteAllText(filePath, s);
-            toast.Show("Options saved");
+            saveOptions("Settings.ini", settings);
+
+            return settings;
         }
 
         /// <summary>
@@ -90,13 +96,45 @@ namespace MultiPlayer {
             Dictionary<string, string> settings = new Dictionary<string, string>();
             string[] lines = File.ReadLines(filePath).ToArray();
 
+            int count = 0;
+            string faultyOptions = "";
             foreach (string s in lines) {
-                string[] option = s.Split('=');
-                settings.Add(option[0], option[1]);
+                if (s.IndexOf("#") == -1 && s.Trim(' ').Length > 0) { // Option file comments and whitelines are ignored
+                    if (s.IndexOf("=") > -1) {
+                        string[] option = s.Split('=');
+                        settings.Add(option[0], option[1]);
+                    } else {
+                        settings.Add(DateTime.Now + " faultyOption(" + (count + 1) + ")", s);
+                        count++;
+                    }
+                }
             }
 
-            toast.Show("Options loaded.");
             return settings;
+        }
+
+        /// <summary>
+        /// Saves the given option to the Settings.ini file.
+        /// </summary>
+        public void saveOptions(string filePath, Dictionary<string, string> settings) {
+            bool showToast = false;
+
+            if (settings == null) {
+                showToast = true;
+                settings = options;
+            }
+
+            string s =
+                "# If you see an option called \"faultyOption#\" then that means something went wrong with one of your settings!" + Environment.NewLine +
+                "# Don't worry though, we saved what we could! This means that you can try to revert the error." + Environment.NewLine + 
+                "# We are sorry for the inconvenience!" + Environment.NewLine + Environment.NewLine;
+
+            foreach (KeyValuePair<string, string> option in settings) {
+                s += option.Key + "=" + option.Value + Environment.NewLine;
+            }
+
+            File.WriteAllText(filePath, s);
+            if (showToast) toast.Show("Options saved");
         }
 
         /// <summary>
@@ -496,8 +534,8 @@ namespace MultiPlayer {
             }
         }
 
-        private void Form1_MouseMove(object sender, MouseEventArgs e) {
-            MessageBox.Show("Penis");
+        private void btn_chat_Click (object sender, EventArgs e) {
+
         }
     }
 }
