@@ -26,16 +26,20 @@ namespace MultiPlayer {
             Windowed,
             FullscreenWindowed
         }
-
-        //Option settings = new Option("Settings.ini");
+        
+        bool initializing = false;
         Thread ctThread;
 
         TcpClient clientSocket;
         NetworkStream serverStream = default(NetworkStream);
+        mpMessage receivedMessage = new mpMessage();
         string readData = null;
 
         public Form2 form2;
         public Form3 form3;
+        ToolTip tt = new ToolTip();
+        private IWin32Window w;
+        RtfBuilder message = new RtfBuilder();
 
         public Dictionary<string, string> options;
         public Toast toast;
@@ -51,7 +55,9 @@ namespace MultiPlayer {
             InitializeComponent();
 
             checkForUpdatesToolStripMenuItem.Visible = false;
+            spl_container.Panel1Collapsed = true;
 
+            w = this;
             toast = new Toast(this, MediaController.Location);
             options = initOptions();
 
@@ -73,17 +79,33 @@ namespace MultiPlayer {
         /// </summary>
         /// <returns>A dictionary of options to be saved in the global options variable.</returns>
         private Dictionary<string, string> initOptions() {
-            string[] allOptions = { "username", "chatEnabled" }; // These are all the names for possible options
+            initializing = true;
+
+            string[] allOptions = { "username", "chatEnabled", "chatroomWidth" }; // These are all the names for possible options
+            string[] defaultValues = {      "",        "true",           "225" }; // These are the default values for the options above
 
             if (!File.Exists("Settings.ini")) File.Create("Settings.ini");
             Dictionary<string, string> settings = loadOptions("Settings.ini");
 
-            foreach (string option in allOptions) {
-                if (!settings.ContainsKey(option)) settings.Add(option, "");
+            for (int i = 0; i < allOptions.Length; i++) {
+                if (!settings.ContainsKey(allOptions[i])) settings.Add(allOptions[i], defaultValues[i]);
             }
 
             saveOptions("Settings.ini", settings);
 
+            foreach (KeyValuePair<string, string> option in settings) { // Initializes and sets all variables according to saved settings.
+                switch (option.Key) {
+                    default: break;
+                    case "chatEnabled":
+                        btn_chat.Enabled = option.Value.ToLower() != "false";
+                        break;
+                    case "chatroomWidth":
+                        spl_container.SplitterDistance = Convert.ToInt16(option.Value);
+                        break;
+                }
+            }
+
+            initializing = false;
             return settings;
         }
 
@@ -97,7 +119,6 @@ namespace MultiPlayer {
             string[] lines = File.ReadLines(filePath).ToArray();
 
             int count = 0;
-            string faultyOptions = "";
             foreach (string s in lines) {
                 if (s.IndexOf("#") == -1 && s.Trim(' ').Length > 0) { // Option file comments and whitelines are ignored
                     if (s.IndexOf("=") > -1) {
@@ -198,10 +219,11 @@ namespace MultiPlayer {
                 savedBorder = this.FormBorderStyle;
 
                 this.FormBorderStyle = FormBorderStyle.None;
-                this.Location = new Point(0, -10);
+                this.Location = new Point(0, 0);
                 this.Size = Screen.GetBounds(this.Location).Size;
 
                 menuStrip1.Visible = false;
+                windowState = mpWindowState.FullscreenWindowed;
                 MediaController.Fullscreen = true;
             } else {
                 this.FormBorderStyle = savedBorder;
@@ -209,6 +231,7 @@ namespace MultiPlayer {
                 this.Size = savedSize;
 
                 menuStrip1.Visible = true;
+                windowState = mpWindowState.Windowed;
                 MediaController.Fullscreen = false;
             }
         }
@@ -233,19 +256,19 @@ namespace MultiPlayer {
         }
 
         private void sendData(mpMessage s) {
-            if (serverStream != null) {
-                byte[] outStream = s.ToBytes();
-                serverStream.Write(outStream, 0, outStream.Length);
-                serverStream.Flush();
-            }
+            if (serverStream == null) return;
+
+            List<byte> outStream = new List<byte>(s.ToBytes());
+            serverStream.Write(outStream.ToArray(), 0, outStream.Count);
+            serverStream.Flush();
         }
 
         private void sendData(string s) {
-            if (serverStream != null) {
-                byte[] outStream = Encoding.ASCII.GetBytes(s);
-                serverStream.Write(outStream, 0, outStream.Length);
-                serverStream.Flush();
-            }
+            if (serverStream == null) return;
+
+            List<byte> outStream = new List<byte>(Encoding.ASCII.GetBytes(s));
+            serverStream.Write(outStream.ToArray(), 0, outStream.Count);
+            serverStream.Flush();
         }
 
         public void connect(IPAddress ip, int port) {
@@ -270,15 +293,20 @@ namespace MultiPlayer {
                 joinLobbyToolStripMenuItem.Text = "Disconnect";
 
                 try {
-                    int buffSize = 1024;
+                    const int buffSize = 1024;
                     byte[] inStream = new byte[buffSize];
                     string returnString = "";
 
                     serverStream = clientSocket.GetStream();
-                    serverStream.Read(inStream, 0, buffSize);
+                    int read = serverStream.Read(inStream, 0, buffSize);
 
-                    mpMessage data = new mpMessage(inStream);
+                    List<byte> actualRead = new List<byte>(inStream).GetRange(0, read);
+
+                    mpMessage data = new mpMessage(actualRead);
                     if (data.type != mpMessage.Type.cmd) {
+                        receivedMessage = data;
+                        receiveChat();
+
                         readData = data.message;
                         msg();
                     } else {
@@ -286,16 +314,25 @@ namespace MultiPlayer {
                     }
 
                     if (returnString.Length > 0) {
+                        receivedMessage = new mpMessage("MultiPlayer", mpMessage.Type.chat, returnString);
                         readData = "" + returnString;
+                        receiveChat();
                         msg();
                     }
                 } catch (Exception ex) {
                     if (clientSocket != null && clientSocket.Connected == true) {
                         closeClientSocket();
 
-                        if (ex.ToString().IndexOf("forcibly") > -1) readData = "Disconnected from server: Server closed";
-                        else if (ex.ToString().IndexOf("WSACancelBlockingCall") > -1) readData = "Disconnected from server: Disconnect";
+                        if (ex.ToString().IndexOf("forcibly") > -1) {
+                            receivedMessage = new mpMessage("MultiPlayer", mpMessage.Type.chat, "Disconnected from server: Server Closed");
+                            readData = "Disconnected from server: Server closed";
+                        }
+                        else if (ex.ToString().IndexOf("WSACancelBlockingCall") > -1) {
+                            receivedMessage = new mpMessage("MultiPlayer", mpMessage.Type.chat, "Disconnected from server: Disconnect");
+                            readData = "Disconnected from server: Disconnect";
+                        }
                         else readData = "Disconnected from server: " + ex.ToString();
+                        receiveChat();
                         msg();
                     }
 
@@ -310,7 +347,6 @@ namespace MultiPlayer {
             string s = "";
 
             string[] msgArr = data.message.Split(';');
-            if (data.type != mpMessage.Type.message) {
                 switch (msgArr[0]) {
                     default: //  ===================== Default error message =====================
                         s = "(DEBUG) Server sent unrecognized command: " + data.message;
@@ -331,8 +367,8 @@ namespace MultiPlayer {
                             if (msgArr[2] != "") {                      // If media name exists
                                 if (msgArr[1] != "") {                  // If media name exists
                                     if (msgArr[1] == mediaName) {       // If media names are the same
-                                        if (data.from != options["username"]) {    // Ask user to play media
-                                            DialogResult diagResult = MessageBox.Show("Play media", data.from + " wants to play " + mediaName + "\nClick YES to agree.", MessageBoxButtons.YesNo);
+                                        if (data.@from != options["username"]) {    // Ask user to play media
+                                            DialogResult diagResult = MessageBox.Show("Play media", data.@from + " wants to play " + mediaName + "\nClick YES to agree.", MessageBoxButtons.YesNo);
 
                                             // Send appropriate response
                                             if (diagResult == DialogResult.Yes) msg = new mpMessage(options["username"], mpMessage.Type.cmd, "playOK;");
@@ -366,10 +402,6 @@ namespace MultiPlayer {
                     case "stop": // ===================== Request media stop =====================
                         break;
                 }
-            } else {
-                if (data.message.IndexOf(options["username"]) > -1) data.message = data.message.Replace(options["username"], options["username"] + "(you)");
-                s = data.message;
-            }
 
             return s;
         }
@@ -378,9 +410,29 @@ namespace MultiPlayer {
             try {
                 if (this.InvokeRequired)
                     this.Invoke(new MethodInvoker(msg));
-                else
+                else {
+                    //tb_receive.Text += readData + Environment.NewLine;
                     toast.Show(readData);
-            } catch(Exception ex) { MessageBox.Show("Toast invoke failed: " + ex.ToString()); }
+                }
+            } catch (Exception ex) { MessageBox.Show("Toast invoke failed: " + ex.ToString()); }
+        }
+
+        private void receiveChat() {
+            try {
+                if (this.InvokeRequired)
+                    this.Invoke(new MethodInvoker(receiveChat));
+                else {
+                    if (receivedMessage.message.IndexOf(receivedMessage.from) > -1) {
+                        message.AppendBold(receivedMessage.message);
+                        message.AppendLine("");
+                    } else {
+                        message.AppendBold((receivedMessage.from == options["username"] ? "You" : receivedMessage.from));
+                        message.AppendLine(": " + receivedMessage.message);
+                    }
+
+                    tb_receive.Rtf = message.ToRtf();
+                }
+            } catch (Exception ex) { MessageBox.Show("Chat invoke failed: " + ex.ToString()); }
         }
 
         private void btn_playpause_Click(object sender, EventArgs e) {
@@ -436,6 +488,7 @@ namespace MultiPlayer {
 
                 closeClientSocket();
                 toast.Show("Disconnected from server: You left");
+                tb_receive.Text += "Disconnected from server: You Left\r\n";
                 joinLobbyToolStripMenuItem.Text = "Join lobby";
             }
         }
@@ -477,11 +530,6 @@ namespace MultiPlayer {
             } else {
                 toast.Show("You did not select a media file");
             }
-
-            gmh = new GlobalMouseHandler(); // Instantiate new global MouseEventHandler
-            gmh.MouseMoved += new MouseMovedEvent(Mouse_Moved); // Add Mouse_Move event
-            gmh.LmbDoubleClick += new MouseMovedEvent(LMB_DoubleClick); // Add Mouse_Move event
-            Application.AddMessageFilter(gmh);
         }
 
         private void stopToolStripMenuItem_Click(object sender, EventArgs e) {
@@ -501,10 +549,7 @@ namespace MultiPlayer {
         }
 
         private void fullscreenToolStripMenuItem_Click(object sender, EventArgs e) {
-            if (windowState == mpWindowState.Windowed)
-                toggleFullscreen(mpWindowState.FullscreenWindowed);
-            else
-                toggleFullscreen(mpWindowState.Windowed);
+            toggleFullscreen(windowState == mpWindowState.Windowed ? mpWindowState.FullscreenWindowed : mpWindowState.Windowed);
         }
 
         private void muteToolStripMenuItem_Click(object sender, EventArgs e) {
@@ -512,8 +557,7 @@ namespace MultiPlayer {
         }
 
         private void playToolStripMenuItem_Click(object sender, EventArgs e) {
-            if ( MediaController.MediaPlayer.playlist.isPlaying == true) playToolStripMenuItem1.Text = "Pause";
-            else playToolStripMenuItem1.Text = "Play";
+            playToolStripMenuItem1.Text = MediaController.MediaPlayer.playlist.isPlaying == true ? "Pause" : "Play";
         }
 
         private void openMediaToolStripMenuItem_Click(object sender, EventArgs e) {
@@ -535,7 +579,34 @@ namespace MultiPlayer {
         }
 
         private void btn_chat_Click (object sender, EventArgs e) {
+            spl_container.Panel1Collapsed = !spl_container.Panel1Collapsed;
+            tb_send.Focus();
+        }
 
+        private void btn_send_Click (object sender, EventArgs e) {
+            if (clientSocket == null || !clientSocket.Connected || tb_send.Text.Trim(' ') == string.Empty) {
+                tb_send.Clear();
+                return;
+            }
+
+            mpMessage message = new mpMessage(options["username"], mpMessage.Type.chat, tb_send.Text);
+            sendData(message);
+
+            tb_send.Text = string.Empty;
+        }
+
+        private void btn_openChat_Click (object sender, EventArgs e) {
+            btn_chat.PerformClick();
+        }
+
+        private void spl_container_SplitterMoved (object sender, SplitterEventArgs e) {
+            if (initializing) return;
+
+            string splitterDistance = Convert.ToString(spl_container.SplitterDistance);
+
+            tt.SetToolTip(spl_container, splitterDistance);
+            options["chatroomWidth"] = splitterDistance;
+            saveOptions("Settings.ini", null);
         }
     }
 }

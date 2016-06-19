@@ -40,6 +40,7 @@ namespace MultiPlayer {
             this.joinLobbyToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             this.changeUsernameToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.btn_chat = new System.Windows.Forms.ToolStripMenuItem();
             this.playToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.playToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.stopToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -51,9 +52,17 @@ namespace MultiPlayer {
             this.helpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.checkForUpdatesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.btn_chat = new System.Windows.Forms.ToolStripMenuItem();
+            this.btn_send = new System.Windows.Forms.Button();
+            this.btn_openChat = new System.Windows.Forms.Button();
+            this.spl_container = new System.Windows.Forms.SplitContainer();
+            this.tb_receive = new System.Windows.Forms.RichTextBox();
+            this.tb_send = new System.Windows.Forms.TextBox();
             this.MediaController = new MultiPlayer.MediaController();
             this.menuStrip1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.spl_container)).BeginInit();
+            this.spl_container.Panel1.SuspendLayout();
+            this.spl_container.Panel2.SuspendLayout();
+            this.spl_container.SuspendLayout();
             this.SuspendLayout();
             // 
             // menuStrip1
@@ -67,7 +76,7 @@ namespace MultiPlayer {
             this.helpToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
-            this.menuStrip1.Size = new System.Drawing.Size(784, 24);
+            this.menuStrip1.Size = new System.Drawing.Size(1055, 24);
             this.menuStrip1.TabIndex = 1;
             this.menuStrip1.Text = "menuStrip1";
             this.menuStrip1.Leave += new System.EventHandler(this.menuStrip1_Leave);
@@ -136,6 +145,14 @@ namespace MultiPlayer {
             this.changeUsernameToolStripMenuItem.Size = new System.Drawing.Size(189, 22);
             this.changeUsernameToolStripMenuItem.Text = "Change username";
             this.changeUsernameToolStripMenuItem.Click += new System.EventHandler(this.changeUsernameToolStripMenuItem_Click);
+            // 
+            // btn_chat
+            // 
+            this.btn_chat.Name = "btn_chat";
+            this.btn_chat.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.C)));
+            this.btn_chat.Size = new System.Drawing.Size(81, 20);
+            this.btn_chat.Text = "Toggle &chat";
+            this.btn_chat.Click += new System.EventHandler(this.btn_chat_Click);
             // 
             // playToolStripMenuItem
             // 
@@ -232,29 +249,92 @@ namespace MultiPlayer {
             this.checkForUpdatesToolStripMenuItem.Text = "Check for updates";
             this.checkForUpdatesToolStripMenuItem.Click += new System.EventHandler(this.checkForUpdatesToolStripMenuItem_Click);
             // 
-            // btn_chat
+            // btn_send
             // 
-            this.btn_chat.Name = "btn_chat";
-            this.btn_chat.Size = new System.Drawing.Size(81, 20);
-            this.btn_chat.Text = "Toggle chat";
-            this.btn_chat.Click += new System.EventHandler(this.btn_chat_Click);
+            this.btn_send.Location = new System.Drawing.Point(147, 530);
+            this.btn_send.Name = "btn_send";
+            this.btn_send.Size = new System.Drawing.Size(75, 23);
+            this.btn_send.TabIndex = 4;
+            this.btn_send.Text = "Send";
+            this.btn_send.UseVisualStyleBackColor = true;
+            this.btn_send.Click += new System.EventHandler(this.btn_send_Click);
+            // 
+            // btn_openChat
+            // 
+            this.btn_openChat.DialogResult = System.Windows.Forms.DialogResult.Cancel;
+            this.btn_openChat.Location = new System.Drawing.Point(-312, -26);
+            this.btn_openChat.Name = "btn_openChat";
+            this.btn_openChat.Size = new System.Drawing.Size(75, 23);
+            this.btn_openChat.TabIndex = 4;
+            this.btn_openChat.Text = "Open chat";
+            this.btn_openChat.UseVisualStyleBackColor = true;
+            this.btn_openChat.Click += new System.EventHandler(this.btn_openChat_Click);
+            // 
+            // spl_container
+            // 
+            this.spl_container.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.spl_container.FixedPanel = System.Windows.Forms.FixedPanel.Panel1;
+            this.spl_container.Location = new System.Drawing.Point(0, 0);
+            this.spl_container.Name = "spl_container";
+            // 
+            // spl_container.Panel1
+            // 
+            this.spl_container.Panel1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(192)))), ((int)(((byte)(255)))), ((int)(((byte)(192)))));
+            this.spl_container.Panel1.Controls.Add(this.tb_receive);
+            this.spl_container.Panel1.Controls.Add(this.btn_send);
+            this.spl_container.Panel1.Controls.Add(this.tb_send);
+            this.spl_container.Panel1.RightToLeft = System.Windows.Forms.RightToLeft.No;
+            // 
+            // spl_container.Panel2
+            // 
+            this.spl_container.Panel2.Controls.Add(this.btn_openChat);
+            this.spl_container.Panel2.Controls.Add(this.MediaController);
+            this.spl_container.Panel2.RightToLeft = System.Windows.Forms.RightToLeft.No;
+            this.spl_container.Size = new System.Drawing.Size(1055, 579);
+            this.spl_container.SplitterDistance = 225;
+            this.spl_container.SplitterWidth = 3;
+            this.spl_container.TabIndex = 3;
+            this.spl_container.SplitterMoved += new System.Windows.Forms.SplitterEventHandler(this.spl_container_SplitterMoved);
+            // 
+            // tb_receive
+            // 
+            this.tb_receive.BackColor = System.Drawing.SystemColors.Window;
+            this.tb_receive.Location = new System.Drawing.Point(0, 24);
+            this.tb_receive.Name = "tb_receive";
+            this.tb_receive.ReadOnly = true;
+            this.tb_receive.ScrollBars = System.Windows.Forms.RichTextBoxScrollBars.Vertical;
+            this.tb_receive.Size = new System.Drawing.Size(225, 533);
+            this.tb_receive.TabIndex = 5;
+            this.tb_receive.Text = "";
+            // 
+            // tb_send
+            // 
+            this.tb_send.AcceptsReturn = true;
+            this.tb_send.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.tb_send.Location = new System.Drawing.Point(0, 559);
+            this.tb_send.Name = "tb_send";
+            this.tb_send.Size = new System.Drawing.Size(225, 20);
+            this.tb_send.TabIndex = 1;
             // 
             // MediaController
             // 
             this.MediaController.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.MediaController.Location = new System.Drawing.Point(0, 24);
+            this.MediaController.Location = new System.Drawing.Point(0, 0);
             this.MediaController.Margin = new System.Windows.Forms.Padding(4);
             this.MediaController.Name = "MediaController";
-            this.MediaController.Size = new System.Drawing.Size(784, 487);
+            this.MediaController.Size = new System.Drawing.Size(827, 579);
             this.MediaController.TabIndex = 2;
             // 
             // Form1
             // 
+            this.AcceptButton = this.btn_send;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(784, 511);
-            this.Controls.Add(this.MediaController);
+            this.CancelButton = this.btn_openChat;
+            this.ClientSize = new System.Drawing.Size(1055, 579);
             this.Controls.Add(this.menuStrip1);
+            this.Controls.Add(this.spl_container);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MainMenuStrip = this.menuStrip1;
             this.MinimumSize = new System.Drawing.Size(450, 349);
@@ -265,6 +345,11 @@ namespace MultiPlayer {
             this.Layout += new System.Windows.Forms.LayoutEventHandler(this.Form1_Layout);
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
+            this.spl_container.Panel1.ResumeLayout(false);
+            this.spl_container.Panel1.PerformLayout();
+            this.spl_container.Panel2.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.spl_container)).EndInit();
+            this.spl_container.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -293,6 +378,11 @@ namespace MultiPlayer {
         private System.Windows.Forms.ToolStripMenuItem fullscreenToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem muteToolStripMenuItem;
         private ToolStripMenuItem btn_chat;
+        private SplitContainer spl_container;
+        private TextBox tb_send;
+        private Button btn_send;
+        private Button btn_openChat;
+        private RichTextBox tb_receive;
     }
 }
 

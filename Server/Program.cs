@@ -51,7 +51,7 @@ namespace ConsoleApplication1 {
             return s;
         }
 
-        static void Main (string[] args) {
+        private static void Main (string[] args) {
             Console.ForegroundColor = ConsoleColor.Green;
 
             bool exit = false;
@@ -108,16 +108,37 @@ namespace ConsoleApplication1 {
                         try {
                             ans.AddRange(ans[0].Split(' '));
 
-                            switch (ans[1]) {
+                            switch (ans[1].ToLower()) {
                                 default:
-                                    Console.WriteLine("\"" + ans + "\" was not recognized as a MultiPlayerServer command.");
+                                    Console.WriteLine("\"" + ans[1] + "\" was not recognized as a MultiPlayerServer command.");
                                     break;
                                 case "say":
                                     broadcast(new mpMessage("Server", mpMessage.Type.message, ListToString(ans, 2, ans.Count)));
                                     break;
-                            }
+                                case "connected":
+                                    Console.WriteLine("\n" + clientsList.Count + " connected client(s)" + (clientsList.Count > 0 ? ":" : "") + "\n");
 
-                            Console.WriteLine("Server: " + ListToString(ans, 2, ans.Count) + "\n");
+                                    if (clientsList.Count > 0) {
+                                        foreach (DictionaryEntry client in clientsList) {
+                                            Console.WriteLine(client.Key);
+                                        }
+
+                                        Console.WriteLine();
+                                    }
+                                    break;
+                                case "kick":
+                                    DisconnectClient(clientSocket, ans[2]);
+                                    Console.WriteLine("\n" + clientsList.Count + " connected client(s)" + (clientsList.Count > 0 ? ":" : "") + "\n");
+
+                                    if (clientsList.Count > 0) {
+                                        foreach (DictionaryEntry client in clientsList) {
+                                            Console.WriteLine(client.Key);
+                                        }
+
+                                        Console.WriteLine();
+                                    }
+                                    break;
+                            }
                         } catch(Exception ex) {
                             Console.WriteLine(ex.ToString());
                         }
@@ -144,9 +165,11 @@ namespace ConsoleApplication1 {
                     mpMessage dataFromClient = null;
 
                     NetworkStream networkStream = clientSocket.GetStream();
-                    networkStream.Read(bytesFrom, 0, 1024);
-                    dataFromClient = new mpMessage(Encoding.ASCII.GetString(bytesFrom));
+                    int read = networkStream.Read(bytesFrom, 0, 1024);
 
+                    List<byte> actualRead = new List<byte>(bytesFrom).GetRange(0, read);
+
+                    dataFromClient = new mpMessage(actualRead);
                     if (clientsList.ContainsKey(dataFromClient.from)) {
                         mpMessage usernameInUse = new mpMessage(dataFromClient.from, mpMessage.Type.cmd, "inUse;");
                         sendData(clientSocket, usernameInUse);
@@ -156,7 +179,7 @@ namespace ConsoleApplication1 {
 
                         if (dataFromClient.type == mpMessage.Type.cmd && dataFromClient.message.IndexOf("join") > -1) {
                             dataFromClient.type = mpMessage.Type.message;
-                            dataFromClient.message = dataFromClient.from + " joined.";
+                            dataFromClient.message = dataFromClient.from + " joined";
 
                             handleClient client = new handleClient();
                             client.startClient(clientSocket, dataFromClient.from, clientsList);
@@ -185,9 +208,9 @@ namespace ConsoleApplication1 {
         public static void sendData (TcpClient clientSocket, mpMessage data) {
             try {
                 NetworkStream writeStream = clientSocket.GetStream();
-                byte[] message = data.ToBytes();
+                List<byte> message = new List<byte>(data.ToBytes());
 
-                writeStream.Write(message, 0, message.Length);
+                writeStream.Write(message.ToArray(), 0, message.Count);
                 writeStream.Flush();
             } catch (Exception ex) {
                 DisconnectClient(clientSocket, data.from);
@@ -213,11 +236,13 @@ namespace ConsoleApplication1 {
                 List<DictionaryEntry> remove = new List<DictionaryEntry>();
                 foreach (DictionaryEntry Item in clientsList) {
                     TcpClient broadcastSocket = (TcpClient)Item.Value;
+                    if (!broadcastSocket.Connected) continue;
+
                     try {
                         NetworkStream broadcastStream = broadcastSocket.GetStream();
-                        byte[] broadcastBytes = data.ToBytes();
+                        List<byte> broadcastBytes = new List<byte>(data.ToBytes());
 
-                        broadcastStream.Write(broadcastBytes, 0, broadcastBytes.Length);
+                        broadcastStream.Write(broadcastBytes.ToArray(), 0, broadcastBytes.Count);
                         broadcastStream.Flush();
                     } catch (Exception ex) {
                         while (broadcastSocket.Connected == true)
@@ -225,7 +250,7 @@ namespace ConsoleApplication1 {
                         broadcastSocket = null;
                         remove.Add(Item);
 
-                        Console.WriteLine(ex.ToString());
+                        Console.WriteLine(ex);
                     }
                 }
                 
@@ -233,9 +258,9 @@ namespace ConsoleApplication1 {
                     clientsList.Remove(Item.Key);
                     clientPlayOKList.Remove(Item.Key.ToString());
                 }
-
-                Console.WriteLine("Broadcast: " + data.ToString());
-            }
+                
+                Console.WriteLine("Broadcast: " + data);
+            } else Console.WriteLine(data.from + ": " + data.message);
         }  //end broadcast function
 
         private static List<KeyValuePair<string, bool>> checkPlayOK() {
@@ -256,7 +281,7 @@ namespace ConsoleApplication1 {
             string[] msgArr = data.message.Split(';');
 
             try {
-                if (data.type != mpMessage.Type.message && data.type != mpMessage.Type.none) {
+                if (data.type == mpMessage.Type.cmd) {
                     switch (msgArr[0]) {
                         default:
                             result.Add(new mpMessage(data.from, mpMessage.Type.error, data.from + " sent unrecognized command: " + data.message + ";"));
@@ -302,9 +327,12 @@ namespace ConsoleApplication1 {
                             result.Add(new mpMessage(data.from, mpMessage.Type.message, "Play request was terminated"));
                             break;
                     }
+                } else if (data.type == mpMessage.Type.message || data.type == mpMessage.Type.chat ||
+                           data.type == mpMessage.Type.none || data.type == mpMessage.Type.error) {
+                    result.Add(data);
+                } else { // If data type was not recognized
+                    Console.WriteLine("An error ocurred with the received message.");
                 }
-                else if (data.type == mpMessage.Type.message && data.type == mpMessage.Type.error) result.Add(data);
-                else Console.WriteLine("An error ocurred with the received message.");
             } catch(Exception ex) {
                 Console.WriteLine(ex.ToString());
             }
@@ -362,11 +390,16 @@ namespace ConsoleApplication1 {
             while (clientSocket != null && clientSocket.Connected == true) {
                 try {
                     requestCount = requestCount + 1;
-                    networkStream.Read(bytesFrom, 0, 1024);
+                    int readCount = networkStream.Read(bytesFrom, 0, 1024);
 
-                    dataFromClient = new mpMessage(bytesFrom);
+                    List<byte> actualRead = new List<byte>(bytesFrom).GetRange(0, readCount); // This fixes a bug with messages always being exactly 1024 bytes long
+
+                    dataFromClient = new mpMessage(actualRead);
                     List<mpMessage> result = Program.handleCommands(clientSocket, dataFromClient);
-                    for (int i = 0; i < result.Count; i++) Program.broadcast(result[i]);
+                    for (int i = 0; i < result.Count; i++) {
+                        mpMessage message = new mpMessage(result[i].ToString());
+                        Program.broadcast(message);
+                    }
                 } catch (Exception ex) {
                     if (ex.Message.IndexOf("forcibly") > -1)
                         Program.broadcast(new mpMessage(clNo, mpMessage.Type.message, clNo + " left"));

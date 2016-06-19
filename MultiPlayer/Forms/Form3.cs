@@ -38,8 +38,6 @@ namespace MultiPlayer {
             string[] ipPort = textBox1.Text.Split(':');
             IPAddress ip;
 
-            string s = null;
-
             if (IPAddress.TryParse(ipPort[0], out ip)) {
                 try {
                     int port = Convert.ToInt16(ipPort[1]);
