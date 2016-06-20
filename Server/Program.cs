@@ -127,15 +127,13 @@ namespace ConsoleApplication1 {
                                     }
                                     break;
                                 case "kick":
-                                    DisconnectClient(clientSocket, ans[2]);
-                                    Console.WriteLine("\n" + clientsList.Count + " connected client(s)" + (clientsList.Count > 0 ? ":" : "") + "\n");
-
                                     if (clientsList.Count > 0) {
-                                        foreach (DictionaryEntry client in clientsList) {
-                                            Console.WriteLine(client.Key);
+                                        for (int i = 2; i < ans.Count; i++) {
+                                            if (clientsList.ContainsKey(ans[i])) {
+                                                DisconnectClient((TcpClient) clientsList[ans[i]], ans[i]);
+                                                broadcast(new mpMessage("Server", mpMessage.Type.message, ans[i] + " was kicked from the server"));
+                                            } else Console.WriteLine("Failed to kick \"" + ans[i] + "\": There is no such user");
                                         }
-
-                                        Console.WriteLine();
                                     }
                                     break;
                             }
@@ -222,8 +220,11 @@ namespace ConsoleApplication1 {
 
         public static void DisconnectClient( TcpClient clientSocket, string username )
         {
-            while( clientSocket.Connected == true )
-                clientSocket.Close();
+            if (clientSocket != null && clientSocket.Connected) {
+                sendData(clientSocket, new mpMessage("Server", mpMessage.Type.cmd, "disconnect;"));
+            }
+
+            while( clientSocket.Connected == true ) clientSocket.Close();
             clientSocket = null;
             clientsList.Remove( username );
             clientPlayOKList.Remove( username );

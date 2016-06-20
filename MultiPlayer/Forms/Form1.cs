@@ -414,7 +414,7 @@ namespace MultiPlayer {
                     //tb_receive.Text += readData + Environment.NewLine;
                     toast.Show(readData);
                 }
-            } catch (Exception ex) { MessageBox.Show("Toast invoke failed: " + ex.ToString()); }
+            } catch (Exception ex) { MessageBox.Show("Toast invoke failed: " + ex); }
         }
 
         private void receiveChat() {
@@ -422,17 +422,17 @@ namespace MultiPlayer {
                 if (this.InvokeRequired)
                     this.Invoke(new MethodInvoker(receiveChat));
                 else {
-                    if (receivedMessage.message.IndexOf(receivedMessage.from) > -1) {
+                    if (receivedMessage.type == mpMessage.Type.message) {
                         message.AppendBold(receivedMessage.message);
                         message.AppendLine("");
-                    } else {
-                        message.AppendBold((receivedMessage.from == options["username"] ? "You" : receivedMessage.from));
+                    } else if (receivedMessage.type == mpMessage.Type.chat) {
+                        message.AppendBold(receivedMessage.from == options["username"] ? "You" : receivedMessage.from);
                         message.AppendLine(": " + receivedMessage.message);
                     }
 
                     tb_receive.Rtf = message.ToRtf();
                 }
-            } catch (Exception ex) { MessageBox.Show("Chat invoke failed: " + ex.ToString()); }
+            } catch (Exception ex) { MessageBox.Show("Chat invoke failed: " + ex); }
         }
 
         private void btn_playpause_Click(object sender, EventArgs e) {
