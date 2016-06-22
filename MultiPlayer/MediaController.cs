@@ -6,10 +6,6 @@ namespace MultiPlayer
 {
     public partial class MediaController : UserControl
     {
-        Thread _th;
-
-        private System.Windows.Forms.Timer _t = new System.Windows.Forms.Timer();
-
         private int _savedVolume = -1;
         private bool _stopped = true;
 
@@ -18,8 +14,6 @@ namespace MultiPlayer
         public MediaController()
         {
             InitializeComponent();
-
-            _th = new Thread( KeepBack );
         }
         
         public void ShowToolbar()
@@ -56,6 +50,7 @@ namespace MultiPlayer
 
         public void Stop()
         {
+            _stopped = true;
             MediaPlayer.playlist.stop();
         }
 
@@ -113,12 +108,6 @@ namespace MultiPlayer
             while( true )
                 MediaPlayer.SendToBack();
         }
-
-        private void player_MediaPlayerStopped( object sender, EventArgs e )
-        {
-            _stopped = true;
-        }
-
         private void tb_volume_ValueChanged( object sender, EventArgs e )
         {
             MediaPlayer.volume = tb_volume.Value;
@@ -127,11 +116,6 @@ namespace MultiPlayer
         private void player_MediaPlayerPositionChanged( object sender, AxAXVLC.DVLCEvents_MediaPlayerPositionChangedEvent e )
         {
             pb_seeker.Value++;
-        }
-
-        private void mediaPlayer1_player_MediaPlayerStopped( object sender, EventArgs e )
-        {
-
         }
         private void btn_playpause_Click( object sender, EventArgs e )
         {
