@@ -82,7 +82,7 @@ namespace MultiPlayer {
             initializing = true;
 
             string[] allOptions = { "username", "chatEnabled", "chatroomWidth" }; // These are all the names for possible options
-            string[] defaultValues = {      "",        "true",           "225" }; // These are the default values for the options above
+            string[] defaultValues = { ""     , "true"       , "225" }; // These are the default values for the options above
 
             if (!File.Exists("Settings.ini")) File.Create("Settings.ini");
             Dictionary<string, string> settings = loadOptions("Settings.ini");
@@ -306,34 +306,26 @@ namespace MultiPlayer {
                     if (data.type != mpMessage.Type.cmd) {
                         receivedMessage = data;
                         receiveChat();
-
-                        readData = data.message;
-                        msg();
                     } else {
                         returnString = handleCommands(data);
                     }
 
                     if (returnString.Length > 0) {
                         receivedMessage = new mpMessage("MultiPlayer", mpMessage.Type.chat, returnString);
-                        readData = "" + returnString;
                         receiveChat();
-                        msg();
                     }
                 } catch (Exception ex) {
                     if (clientSocket != null && clientSocket.Connected == true) {
                         closeClientSocket();
 
                         if (ex.ToString().IndexOf("forcibly") > -1) {
-                            receivedMessage = new mpMessage("MultiPlayer", mpMessage.Type.chat, "Disconnected from server: Server Closed");
-                            readData = "Disconnected from server: Server closed";
+                            receivedMessage = new mpMessage("Server", mpMessage.Type.chat, "Disconnected from server: Server Closed");
                         }
                         else if (ex.ToString().IndexOf("WSACancelBlockingCall") > -1) {
-                            receivedMessage = new mpMessage("MultiPlayer", mpMessage.Type.chat, "Disconnected from server: Disconnect");
-                            readData = "Disconnected from server: Disconnect";
+                            receivedMessage = new mpMessage("Server", mpMessage.Type.chat, "Disconnected from server: Disconnect");
                         }
-                        else readData = "Disconnected from server: " + ex.ToString();
+                        else receivedMessage = new mpMessage("Server", mpMessage.Type.message, "Disconnected from server: " + ex);
                         receiveChat();
-                        msg();
                     }
 
                     break;
@@ -411,7 +403,10 @@ namespace MultiPlayer {
                 if (this.InvokeRequired)
                     this.Invoke(new MethodInvoker(msg));
                 else {
-                    //tb_receive.Text += readData + Environment.NewLine;
+                    message.AppendBold(readData);
+                    message.AppendLine("");
+
+                    tb_receive.Rtf = message.ToRtf();
                     toast.Show(readData);
                 }
             } catch (Exception ex) { MessageBox.Show("Toast invoke failed: " + ex); }
@@ -432,7 +427,9 @@ namespace MultiPlayer {
 
                     tb_receive.Rtf = message.ToRtf();
                 }
-            } catch (Exception ex) { MessageBox.Show("Chat invoke failed: " + ex); }
+            } catch (Exception ex) {
+                if (ex.ToString().IndexOf("invoke") == -1) MessageBox.Show("");
+            }
         }
 
         private void btn_playpause_Click(object sender, EventArgs e) {
