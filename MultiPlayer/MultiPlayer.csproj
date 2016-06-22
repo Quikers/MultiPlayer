@@ -49,6 +49,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Gma.UserActivityMonitor">
+      <HintPath>..\Libs\Gma.UserActivityMonitor.dll</HintPath>
+    </Reference>
     <Reference Include="Message">
       <HintPath>..\Libs\Message.dll</HintPath>
     </Reference>

@@ -14,7 +14,7 @@ using System.Diagnostics;
 using System.Net;
 using System.Net.Sockets;
 using System.IO;
-
+using Gma.UserActivityMonitor;
 using MultiPlayerLib;
 
 namespace MultiPlayer {
@@ -37,14 +37,16 @@ namespace MultiPlayer {
 
         public Form2 form2;
         public Form3 form3;
+
+        RtfBuilder message = new RtfBuilder();
         ToolTip tt = new ToolTip();
         private IWin32Window w;
-        RtfBuilder message = new RtfBuilder();
 
         public Dictionary<string, string> options;
         public Toast toast;
         public OpenFileDialog fileDiag;
-        GlobalMouseHandler gmh;
+        private GlobalEventProvider gma = new GlobalEventProvider();
+        //MouseHooker mh = new MouseHooker();
         mpWindowState windowState = new mpWindowState();
 
         private Point savedLoc = new Point(0, 0);
@@ -68,10 +70,8 @@ namespace MultiPlayer {
                 Multiselect = true
             };
 
-            gmh = new GlobalMouseHandler(); // Instantiate new global MouseEventHandler
-            gmh.MouseMoved += new MouseMovedEvent(Mouse_Moved); // Add Mouse_Move event
-            gmh.LmbDoubleClick += new MouseMovedEvent(LMB_DoubleClick); // Add Mouse_Move event
-            Application.AddMessageFilter(gmh);
+            gma.MouseMove += Mouse_Moved;
+            gma.MouseDoubleClick += Mouse_LMB;
         }
 
         /// <summary>
@@ -82,7 +82,7 @@ namespace MultiPlayer {
             initializing = true;
 
             string[] allOptions = { "username", "chatEnabled", "chatroomWidth" }; // These are all the names for possible options
-            string[] defaultValues = { ""     , "true"       , "225" }; // These are the default values for the options above
+            string[] defaultValues = {      "",        "true",           "225" }; // These are the default values for the options above
 
             if (!File.Exists("Settings.ini")) File.Create("Settings.ini");
             Dictionary<string, string> settings = loadOptions("Settings.ini");
@@ -161,18 +161,17 @@ namespace MultiPlayer {
         /// <summary>
         /// EventHandler for mouse movement inside the form.
         /// </summary>
-        private void Mouse_Moved() {
+        private void Mouse_Moved(object sender, EventArgs e) {
             Size mpSize = MediaController.Size;
             Point mPos = Cursor.Position;
-            int mpY = 52;
+            int mpY = 35;
 
-            if (mPos.X > this.Location.X &&
-                mPos.X < this.Location.X + mpSize.Width + 10 &&
-                mPos.Y > this.Location.Y + mpSize.Height - 32 &&
+            if (mPos.X > this.Location.X + (spl_container.Panel1Collapsed == false ? spl_container.SplitterDistance + 3 : 0) &&
+                mPos.X < this.Location.X + mpSize.Width + (spl_container.Panel1Collapsed == false ? spl_container.SplitterDistance + 3 : 0) + 10 &&
+                mPos.Y > this.Location.Y + mpSize.Height - 64 &&
                 mPos.Y < this.Location.Y + mpY + mpSize.Height) {
 
                 MediaController.ShowToolbar();
-
             } else
                 MediaController.HideToolbar();
 
@@ -190,7 +189,7 @@ namespace MultiPlayer {
         /// <summary>
         /// EventHandler for double left-mousebutton clicks.
         /// </summary>
-        private void LMB_DoubleClick() {
+        private void Mouse_LMB(object sender, EventArgs e) {
             Point mPos = Cursor.Position;
             Size mpSize = MediaController.Size;
             int mpY = 52;
@@ -199,13 +198,9 @@ namespace MultiPlayer {
                 mPos.X < this.Location.X + mpSize.Width &&
                 mPos.Y > this.Location.Y + mpY &&
                 mPos.Y < this.Location.Y + mpY + mpSize.Height) {
-
-                if (windowState == mpWindowState.Windowed)
-                    toggleFullscreen(mpWindowState.FullscreenWindowed);
-                if (windowState == mpWindowState.FullscreenWindowed)
-                    toggleFullscreen(mpWindowState.Windowed);
+                toggleFullscreen(windowState == mpWindowState.Windowed ? mpWindowState.FullscreenWindowed : mpWindowState.Windowed);
             }
-                    
+
         }
 
         /// <summary>
