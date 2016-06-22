@@ -19,19 +19,25 @@ namespace MultiPlayer
         {
             InitializeComponent();
 
-            _th = new Thread( KeepBack );            
+            _th = new Thread( KeepBack );
         }
         
         public void ShowToolbar()
         {
-            _toolbar.pnl_toolbar.Show();
+            pnl_toolbar.Show();
         }
 
         public void HideToolbar()
         {
-            //_toolbar.pnl_toolbar.Hide();
+            pnl_toolbar.Hide();
         }
 
+        /// <summary>
+        /// Adds media to the playlist
+        /// </summary>
+        /// <param name="filePath">Path of the file</param>
+        /// <param name="name">Name of the media</param>
+        /// <param name="options"></param>
         public void AddMedia( string filePath, object name, object options )
         {
             MediaPlayer.playlist.add( "file:///" + filePath, name, options );
@@ -115,19 +121,28 @@ namespace MultiPlayer
 
         private void tb_volume_ValueChanged( object sender, EventArgs e )
         {
-            //MediaPlayer.volume = _toolbar.tb_volume.Value;
+            MediaPlayer.volume = tb_volume.Value;
         }
 
         private void player_MediaPlayerPositionChanged( object sender, AxAXVLC.DVLCEvents_MediaPlayerPositionChangedEvent e )
         {
-            //pb_seeker.Value++;
+            pb_seeker.Value++;
         }
 
         private void mediaPlayer1_player_MediaPlayerStopped( object sender, EventArgs e )
         {
 
-        }        
-	
+        }
+        private void btn_playpause_Click( object sender, EventArgs e )
+        {
+            btn_playpause.Text = btn_playpause.Text == "Play" ? "Pause" : "Play";
 
+            PlayPause();
+        }
+
+        private void btn_stop_Click( object sender, EventArgs e )
+        {
+            Stop();
+        }
     }
 }

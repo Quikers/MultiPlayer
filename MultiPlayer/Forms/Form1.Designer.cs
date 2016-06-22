@@ -289,6 +289,7 @@ namespace MultiPlayer {
             // 
             this.spl_container.Panel2.Controls.Add(this.btn_openChat);
             this.spl_container.Panel2.Controls.Add(this.MediaController);
+            this.spl_container.Panel2.Cursor = System.Windows.Forms.Cursors.Default;
             this.spl_container.Panel2.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.spl_container.Size = new System.Drawing.Size(1055, 579);
             this.spl_container.SplitterDistance = 225;
@@ -326,7 +327,7 @@ namespace MultiPlayer {
             this.MediaController.Location = new System.Drawing.Point(0, 0);
             this.MediaController.Margin = new System.Windows.Forms.Padding(4);
             this.MediaController.Name = "MediaController";
-            this.MediaController.Size = new System.Drawing.Size(827, 579);
+            this.MediaController.Size = new System.Drawing.Size(829, 579);
             this.MediaController.TabIndex = 2;
             // 
             // Form1

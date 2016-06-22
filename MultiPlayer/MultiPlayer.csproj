@@ -95,12 +95,6 @@
     <Compile Include="MediaController.Designer.cs">
       <DependentUpon>MediaController.cs</DependentUpon>
     </Compile>
-    <Compile Include="Toolbar.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="Toolbar.Designer.cs">
-      <DependentUpon>Toolbar.cs</DependentUpon>
-    </Compile>
     <EmbeddedResource Include="Forms\Form1.resx">
       <DependentUpon>Form1.cs</DependentUpon>
     </EmbeddedResource>
@@ -122,9 +116,6 @@
     </Compile>
     <EmbeddedResource Include="MediaController.resx">
       <DependentUpon>MediaController.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Toolbar.resx">
-      <DependentUpon>Toolbar.cs</DependentUpon>
     </EmbeddedResource>
     <None Include="Misc\Settings.ini" />
     <None Include="packages.config" />
