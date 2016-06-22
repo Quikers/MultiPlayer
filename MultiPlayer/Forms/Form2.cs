@@ -35,6 +35,7 @@ namespace MultiPlayer {
             if (textBox1.Text.Length > 2) {
                 try {
                     form1.options["username"] = textBox1.Text;
+                    form1.options["chatEnabled"] = textBox1.Text;
 
                     form1.saveOptions("Settings.ini", null);
                 } catch (Exception ex) {

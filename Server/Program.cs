@@ -396,9 +396,10 @@ namespace ConsoleApplication1 {
                     List<byte> actualRead = new List<byte>(bytesFrom).GetRange(0, readCount); // This fixes a bug with messages always being exactly 1024 bytes long
 
                     dataFromClient = new mpMessage(actualRead);
-                    List<mpMessage> result = Program.handleCommands(clientSocket, dataFromClient);
-                    for (int i = 0; i < result.Count; i++) {
-                        mpMessage message = new mpMessage(result[i].ToString());
+                    List<mpMessage> results = Program.handleCommands(clientSocket, dataFromClient);
+
+                    foreach (mpMessage result in results) {
+                        mpMessage message = new mpMessage(result.ToString());
                         Program.broadcast(message);
                     }
                 } catch (Exception ex) {
@@ -406,8 +407,10 @@ namespace ConsoleApplication1 {
                         Program.broadcast(new mpMessage(clNo, mpMessage.Type.message, clNo + " left"));
                     else
                         Console.WriteLine(ex.ToString());
-                    
+
+                    Program.broadcast(new mpMessage(clNo, mpMessage.Type.message, clNo + " disconnected"));
                     closeClientSocket();
+                    break;
                 }
             }
         }
