@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.IO;
 using System.Xml.Linq;
+using MultiPlayerLib;
 
 namespace MultiPlayer {
     public partial class Form2 : Form {

@@ -46,7 +46,6 @@ namespace MultiPlayer {
         public Toast toast;
         public OpenFileDialog fileDiag;
         private GlobalEventProvider gma = new GlobalEventProvider();
-        //MouseHooker mh = new MouseHooker();
         mpWindowState windowState = new mpWindowState();
 
         private Point savedLoc = new Point(0, 0);
