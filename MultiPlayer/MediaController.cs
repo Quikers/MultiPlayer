@@ -166,8 +166,8 @@ namespace MultiPlayer
 
         private void pb_MouseDown( object sender, MouseEventArgs e )
         {
-            var newValue = e.X / ( double )_pb.Width * ( _pb.Maximum - _pb.Minimum );
-            _pb.Value = Convert.ToInt32( newValue + 5 );
+            var newValue = ( e.X + 4 ) / ( double )_pb.Width * ( _pb.Maximum - _pb.Minimum );
+            _pb.Value = Convert.ToInt32( newValue );
         }
     }
 }
