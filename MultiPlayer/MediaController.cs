@@ -1,21 +1,59 @@
 ﻿using System;
+using System.Drawing;
+using System.Globalization;
+using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Threading;
+using System.Windows;
 using System.Windows.Forms;
+using Brush = System.Drawing.Brushes;
+using Point = System.Drawing.Point;
 
 namespace MultiPlayer
 {
     public partial class MediaController : UserControl
     {
+        public class pbSeeker : ProgressBar
+        {
+            public pbSeeker()
+            {
+                this.SetStyle( ControlStyles.UserPaint, true );
+            }
+
+            protected override void OnPaint( PaintEventArgs e )
+            {
+                Rectangle rec = e.ClipRectangle;
+
+                rec.Width = ( int ) ( rec.Width * ( ( double ) Value / Maximum ) ) - 4;
+                if( ProgressBarRenderer.IsSupported )
+                    ProgressBarRenderer.DrawHorizontalBar( e.Graphics, e.ClipRectangle );
+                rec.Height -= 4;
+                e.Graphics.FillRectangle( Brush.DodgerBlue, 2, 2, rec.Width, rec.Height );
+            }
+        }
+        
         private int _savedVolume = -1;
         private bool _stopped = true;
 
         public bool Fullscreen = false;
+        private readonly pbSeeker _pb;
 
         public MediaController()
         {
             InitializeComponent();
+
+            _pb = new pbSeeker
+            {
+                Width = 243,
+                Height = 45,
+                Location = new Point(193, 2),
+                Maximum = 1999999,
+                Anchor = (AnchorStyles.Left | AnchorStyles.Bottom | AnchorStyles.Right)
+            };
+            _pb.MouseDown += pb_MouseDown;
+            pnl_toolbar.Controls.Add(_pb);
         }
-        
+
         public void ShowToolbar()
         {
             pnl_toolbar.Show();
@@ -39,9 +77,11 @@ namespace MultiPlayer
 
         public void PlayPause()
         {
-            if( _stopped )
+            if ( _stopped )
             {
                 MediaPlayer.playlist.play();
+
+                _pb.Value = 0;
                 _stopped = false;
             }
             else
@@ -112,11 +152,6 @@ namespace MultiPlayer
         {
             MediaPlayer.volume = tb_volume.Value;
         }
-
-        private void player_MediaPlayerPositionChanged( object sender, AxAXVLC.DVLCEvents_MediaPlayerPositionChangedEvent e )
-        {
-            pb_seeker.Value++;
-        }
         private void btn_playpause_Click( object sender, EventArgs e )
         {
             btn_playpause.Text = btn_playpause.Text == "Play" ? "Pause" : "Play";
@@ -127,6 +162,12 @@ namespace MultiPlayer
         private void btn_stop_Click( object sender, EventArgs e )
         {
             Stop();
+        }
+
+        private void pb_MouseDown( object sender, MouseEventArgs e )
+        {
+            var newValue = e.X / ( double )_pb.Width * ( _pb.Maximum - _pb.Minimum );
+            _pb.Value = Convert.ToInt32( newValue + 5 );
         }
     }
 }
