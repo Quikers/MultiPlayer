@@ -50,6 +50,8 @@
             this.MediaPlayer.OcxState = ((System.Windows.Forms.AxHost.State)(resources.GetObject("MediaPlayer.OcxState")));
             this.MediaPlayer.Size = new System.Drawing.Size(538, 392);
             this.MediaPlayer.TabIndex = 2;
+            this.MediaPlayer.MediaPlayerOpening += new System.EventHandler(this.MediaPlayer_MediaPlayerOpening);
+            this.MediaPlayer.MediaPlayerTimeChanged += new AxAXVLC.DVLCEvents_MediaPlayerTimeChangedEventHandler(this.MediaPlayer_MediaPlayerTimeChanged);
             // 
             // btn_playpause
             // 
